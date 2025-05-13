@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý danh mục - SenseLib Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        body { min-height: 100vh; background: var(--background); }
+        .admin-sidebar {
+            min-height: 100vh;
+            background: var(--card-bg);
+            box-shadow: 2px 0 8px var(--shadow);
+            padding: 2rem 1rem 1rem 1rem;
+        }
+        .admin-sidebar .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .admin-sidebar .nav-link.active, .admin-sidebar .nav-link:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .admin-header h2 {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .admin-content { padding: 2rem; }
+        .table thead th {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .table tbody tr { background: var(--card-bg); }
+        .table td, .table th { vertical-align: middle; }
+        .badge-status {
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.3em 1em;
+        }
+        .badge-active { background: #28a745; color: #fff; }
+        .badge-inactive { background: #dc3545; color: #fff; }
+        .stat-box {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px var(--shadow);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box h4 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-box p {
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        @media (max-width: 991px) {
+            .admin-sidebar { min-height: auto; padding: 1rem; }
+            .admin-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-lg-2 col-md-3 admin-sidebar d-flex flex-column">
+            <a class="navbar-brand mb-4" href="home.html">SenseLib Admin</a>
+            <a class="nav-link" href="admin-accounts.html"><i class="fas fa-users me-2"></i>Quản lý tài khoản</a>
+            <a class="nav-link active" href="#"><i class="fas fa-list me-2"></i>Quản lý danh mục</a>
+            <a class="nav-link" href="#"><i class="fas fa-book me-2"></i>Quản lý tài liệu</a>
+            <a class="nav-link" href="#"><i class="fas fa-chart-bar me-2"></i>Thống kê</a>
+            <a class="nav-link mt-auto" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+        </nav>
+        <!-- Main Content -->
+        <main class="col-lg-10 col-md-9 admin-content">
+            <div class="admin-header">
+                <h2>Quản lý danh mục tài liệu/sách</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="fas fa-plus me-2"></i>Thêm mới danh mục
+                </button>
+            </div>
+            <!-- Bảng danh mục -->
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên danh mục</th>
+                            <th>Mô tả</th>
+                            <th>Trạng thái</th>
+                            <th>Số tài liệu</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Giáo dục</td>
+                            <td>Tài liệu về giáo dục, học tập, giảng dạy...</td>
+                            <td><span class="badge badge-status badge-active">Hoạt động</span></td>
+                            <td>25</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editCategoryModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Công nghệ</td>
+                            <td>Tài liệu về công nghệ, lập trình, phần mềm...</td>
+                            <td><span class="badge badge-status badge-active">Hoạt động</span></td>
+                            <td>18</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editCategoryModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Văn học</td>
+                            <td>Sách, truyện, thơ, tác phẩm văn học...</td>
+                            <td><span class="badge badge-status badge-inactive">Ngừng hoạt động</span></td>
+                            <td>0</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editCategoryModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <!-- Thêm các dòng khác nếu cần -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Thêm danh mục -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCategoryModalLabel">Thêm mới danh mục</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tên danh mục</label>
+            <input type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mô tả</label>
+            <textarea class="form-control" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sửa danh mục -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCategoryModalLabel">Chỉnh sửa danh mục</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tên danh mục</label>
+            <input type="text" class="form-control" value="Giáo dục" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mô tả</label>
+            <textarea class="form-control" rows="3" required>Tài liệu về giáo dục, học tập, giảng dạy...</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" required>
+              <option value="active" selected>Hoạt động</option>
+              <option value="inactive">Ngừng hoạt động</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Xác nhận xóa danh mục -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteCategoryModalLabel">Xác nhận xóa danh mục</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa danh mục này không? Nếu danh mục đã liên kết với tài liệu, trạng thái sẽ chuyển sang <b>Ngừng hoạt động</b> để đảm bảo an toàn dữ liệu.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-danger">Xóa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

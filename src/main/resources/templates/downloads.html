@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài liệu đã tải - SenseLib</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <style>
+        :root {
+            --primary-color: #40E0D0;
+            --secondary-color: #20B2AA;
+            --text-color: #333;
+            --white: #ffffff;
+            --background: #ffffff;
+            --card-bg: #ffffff;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #20B2AA;
+            --secondary-color: #40E0D0;
+            --text-color: #ffffff;
+            --background: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .navbar {
+            background-color: var(--card-bg) !important;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .nav-link {
+            color: var(--text-color) !important;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .page-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .book-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .book-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .book-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .book-info p {
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .book-stats {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .book-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .detail-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0;
+            width: 100%;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .detail-btn:hover {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .download-info {
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .download-info p {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .download-info i {
+            color: var(--primary-color);
+            width: 20px;
+        }
+
+        .download-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-failed {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-explore {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-explore:hover {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .download-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-redownload {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-redownload:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: var(--white);
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" href="upload.html"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" href="favorites.html"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" href="downloads.html"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <!-- Page Header -->
+        <section class="page-header">
+            <h1 class="display-4 mb-3">Tài liệu đã tải</h1>
+            <p class="lead">Lịch sử các tài liệu bạn đã tải xuống</p>
+        </section>
+
+        <!-- Downloads Content -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <!-- Sample Downloaded Document -->
+            <div class="col">
+                <div class="book-card">
+                    <div class="position-relative">
+                        <img src="/img/flower.jpg" alt="Book cover" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3>Tiêu đề tài liệu</h3>
+                        <p class="mb-2">Tác giả: John Doe</p>
+                        <p class="mb-2">NXB: ABC Publishing</p>
+                        <div class="download-info">
+                            <p><i class="fas fa-download"></i> Đã tải: 01/01/2024</p>
+                            <p><i class="fas fa-file"></i> Định dạng: PDF</p>
+                            <p><i class="fas fa-hdd"></i> Kích thước: 2.5 MB</p>
+                            <p>
+                                <i class="fas fa-check-circle"></i> Trạng thái: 
+                                <span class="download-status status-success">Hoàn thành</span>
+                            </p>
+                        </div>
+                        <div class="download-actions">
+                            <button class="btn-redownload" title="Tải lại">
+                                <i class="fas fa-redo"></i> Tải lại
+                            </button>
+                            <button class="btn-delete" title="Xóa khỏi lịch sử">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
+                            <i class="fas fa-info-circle"></i> Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Another Sample with Different Status -->
+            <div class="col">
+                <div class="book-card">
+                    <div class="position-relative">
+                        <img src="/img/flower.jpg" alt="Book cover" class="book-image">
+                    </div>
+                    <div class="book-info">
+                        <h3>Tiêu đề tài liệu khác</h3>
+                        <p class="mb-2">Tác giả: Jane Smith</p>
+                        <p class="mb-2">NXB: XYZ Publishing</p>
+                        <div class="download-info">
+                            <p><i class="fas fa-download"></i> Đã tải: 02/01/2024</p>
+                            <p><i class="fas fa-file"></i> Định dạng: DOCX</p>
+                            <p><i class="fas fa-hdd"></i> Kích thước: 1.8 MB</p>
+                            <p>
+                                <i class="fas fa-exclamation-circle"></i> Trạng thái: 
+                                <span class="download-status status-failed">Thất bại</span>
+                            </p>
+                        </div>
+                        <div class="download-actions">
+                            <button class="btn-redownload" title="Tải lại">
+                                <i class="fas fa-redo"></i> Tải lại
+                            </button>
+                            <button class="btn-delete" title="Xóa khỏi lịch sử">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <button style="
+                        margin-top: 20px"
+                     type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
+                            <i class="fas fa-info-circle"></i> Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State (Hidden by default) -->
+            <div class="col-12 d-none">
+                <div class="empty-state">
+                    <i class="fas fa-download"></i>
+                    <h3>Chưa có tài liệu nào được tải xuống</h3>
+                    <p>Khám phá thư viện và tải xuống những tài liệu bạn cần</p>
+                    <a href="home.html" class="btn-explore">
+                        <i class="fas fa-search"></i> Khám phá ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Delete button functionality
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.book-card');
+                card.style.display = 'none';
+                
+                // Check if there are any remaining cards
+                const remainingCards = document.querySelectorAll('.book-card:not([style*="display: none"])');
+                if (remainingCards.length === 0) {
+                    document.querySelector('.empty-state').classList.remove('d-none');
+                }
+            });
+        });
+
+        // Redownload button functionality
+        document.querySelectorAll('.btn-redownload').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Add your download logic here
+                alert('Đang tải lại tài liệu...');
+            });
+        });
+    </script>
+</body>
+</html>

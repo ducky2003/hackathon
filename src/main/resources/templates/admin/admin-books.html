@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài liệu/sách - SenseLib Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        body { min-height: 100vh; background: var(--background); }
+        .admin-sidebar {
+            min-height: 100vh;
+            background: var(--card-bg);
+            box-shadow: 2px 0 8px var(--shadow);
+            padding: 2rem 1rem 1rem 1rem;
+        }
+        .admin-sidebar .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .admin-sidebar .nav-link.active, .admin-sidebar .nav-link:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .admin-header h2 {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .admin-content { padding: 2rem; }
+        .table thead th {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .table tbody tr { background: var(--card-bg); }
+        .table td, .table th { vertical-align: middle; }
+        .badge-status {
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.3em 1em;
+        }
+        .badge-approved { background: #28a745; color: #fff; }
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-rejected { background: #dc3545; color: #fff; }
+        .tab-content { margin-top: 2rem; }
+        .tab-pane .table { margin-bottom: 0; }
+        @media (max-width: 991px) {
+            .admin-sidebar { min-height: auto; padding: 1rem; }
+            .admin-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-lg-2 col-md-3 admin-sidebar d-flex flex-column">
+            <a class="navbar-brand mb-4" href="home.html">SenseLib Admin</a>
+            <a class="nav-link" href="admin-accounts.html"><i class="fas fa-users me-2"></i>Quản lý tài khoản</a>
+            <a class="nav-link" href="admin-categories.html"><i class="fas fa-list me-2"></i>Quản lý danh mục</a>
+            <a class="nav-link active" href="#"><i class="fas fa-book me-2"></i>Quản lý tài liệu/sách</a>
+            <a class="nav-link" href="#"><i class="fas fa-chart-bar me-2"></i>Thống kê</a>
+            <a class="nav-link mt-auto" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+        </nav>
+        <!-- Main Content -->
+        <main class="col-lg-10 col-md-9 admin-content">
+            <div class="admin-header">
+                <h2>Quản lý tài liệu/sách</h2>
+            </div>
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="bookTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">Sách/Tài liệu</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="authors-tab" data-bs-toggle="tab" data-bs-target="#authors" type="button" role="tab">Tác giả</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="publishers-tab" data-bs-toggle="tab" data-bs-target="#publishers" type="button" role="tab">Nhà xuất bản</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <!-- Tab Sách/Tài liệu -->
+                <div class="tab-pane fade show active" id="books" role="tabpanel">
+                    <div class="d-flex justify-content-end my-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+                            <i class="fas fa-plus me-2"></i>Thêm mới sách/tài liệu
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tiêu đề</th>
+                                    <th>Tác giả</th>
+                                    <th>Nhà xuất bản</th>
+                                    <th>Danh mục</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày đăng</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-book-id="1">
+                                    <td>1</td>
+                                    <td>Giáo trình Lập trình C</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>NXB Giáo dục</td>
+                                    <td>Giáo dục</td>
+                                    <td><span class="badge badge-status badge-pending">Chờ duyệt</span></td>
+                                    <td>01/04/2024</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target="#approveBookModal"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editBookModal"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <tr data-book-id="2">
+                                    <td>2</td>
+                                    <td>Phân tích dữ liệu với Python</td>
+                                    <td>Lê Văn C</td>
+                                    <td>NXB Công nghệ</td>
+                                    <td>Công nghệ</td>
+                                    <td><span class="badge badge-status badge-approved">Đã duyệt</span></td>
+                                    <td>15/03/2024</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editBookModal"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Thêm các dòng khác nếu cần -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Tab Tác giả -->
+                <div class="tab-pane fade" id="authors" role="tabpanel">
+                    <div class="d-flex justify-content-end my-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAuthorModal">
+                            <i class="fas fa-plus me-2"></i>Thêm mới tác giả
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Họ tên</th>
+                                    <th>Tiểu sử</th>
+                                    <th>Số sách/tài liệu</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>Chuyên gia lập trình, giảng viên đại học...</td>
+                                    <td>5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editAuthorModal"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Thêm các dòng khác nếu cần -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Tab Nhà xuất bản -->
+                <div class="tab-pane fade" id="publishers" role="tabpanel">
+                    <div class="d-flex justify-content-end my-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPublisherModal">
+                            <i class="fas fa-plus me-2"></i>Thêm mới NXB
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tên NXB</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Số sách/tài liệu</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>NXB Giáo dục</td>
+                                    <td>Hà Nội</td>
+                                    <td>10</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editPublisherModal"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Thêm các dòng khác nếu cần -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa Sách -->
+<div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBookModalLabel">Thêm mới sách/tài liệu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Tiêu đề</label>
+                <input type="text" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tác giả</label>
+                <select class="form-select" required>
+                  <option value="">Chọn tác giả</option>
+                  <option>Nguyễn Văn A</option>
+                  <option>Lê Văn C</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nhà xuất bản</label>
+                <select class="form-select">
+                  <option value="">Chọn NXB</option>
+                  <option>NXB Giáo dục</option>
+                  <option>NXB Công nghệ</option>
+                  <option>Chưa xuất bản</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Danh mục</label>
+                <select class="form-select" required>
+                  <option value="">Chọn danh mục</option>
+                  <option>Giáo dục</option>
+                  <option>Công nghệ</option>
+                  <option>Văn học</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Mô tả</label>
+                <textarea class="form-control" rows="3"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tệp tài liệu</label>
+                <input type="file" class="form-control">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Sửa sách (có thể dùng chung với thêm mới, chỉ đổi title và nút) -->
+<div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="editBookModalLabel">Chỉnh sửa sách/tài liệu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Nội dung form tương tự modal thêm mới, có thể điền sẵn dữ liệu -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Phê duyệt sách -->
+<div class="modal fade" id="approveBookModal" tabindex="-1" aria-labelledby="approveBookModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approveBookModalLabel">Phê duyệt sách/tài liệu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn phê duyệt sách/tài liệu này để hiển thị trên hệ thống?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-success">Phê duyệt</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Thêm/Sửa Tác giả -->
+<div class="modal fade" id="addAuthorModal" tabindex="-1" aria-labelledby="addAuthorModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAuthorModalLabel">Thêm mới tác giả</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Họ tên</label>
+            <input type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tiểu sử</label>
+            <textarea class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="editAuthorModal" tabindex="-1" aria-labelledby="editAuthorModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAuthorModalLabel">Chỉnh sửa tác giả</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Nội dung form tương tự modal thêm mới, có thể điền sẵn dữ liệu -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Thêm/Sửa NXB -->
+<div class="modal fade" id="addPublisherModal" tabindex="-1" aria-labelledby="addPublisherModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addPublisherModalLabel">Thêm mới nhà xuất bản</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tên NXB</label>
+            <input type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="editPublisherModal" tabindex="-1" aria-labelledby="editPublisherModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPublisherModalLabel">Chỉnh sửa nhà xuất bản</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Nội dung form tương tự modal thêm mới, có thể điền sẵn dữ liệu -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let approveBookId = null;
+
+    // Khi nhấn nút phê duyệt trên bảng, lưu lại id sách
+    document.querySelectorAll('.btn-success[data-bs-target="#approveBookModal"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            approveBookId = this.closest('tr').getAttribute('data-book-id');
+        });
+    });
+
+    // Khi nhấn nút xác nhận phê duyệt trong modal
+    document.querySelector('#approveBookModal .btn-success').addEventListener('click', function() {
+        if (approveBookId) {
+            const row = document.querySelector('tr[data-book-id="' + approveBookId + '"]');
+            if (row) {
+                // Đổi trạng thái
+                const statusCell = row.querySelector('.badge-status');
+                statusCell.classList.remove('badge-pending');
+                statusCell.classList.add('badge-approved');
+                statusCell.textContent = 'Đã duyệt';
+                // Ẩn modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('approveBookModal'));
+                modal.hide();
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

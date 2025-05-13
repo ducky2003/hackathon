@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SenseLib - Trang cá nhân</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        .profile-container {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .profile-sidebar {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .profile-sidebar .nav-link {
+            color: var(--text-color);
+            padding: 0.8rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .profile-sidebar .nav-link:hover,
+        .profile-sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .profile-sidebar .nav-link i {
+            width: 25px;
+        }
+
+        .profile-content {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .profile-avatar-container:hover .avatar-upload {
+            opacity: 1;
+        }
+
+        .avatar-upload:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .avatar-upload input[type="file"] {
+            display: none;
+        }
+
+        .profile-info {
+            margin-top: 2rem;
+        }
+
+        .profile-info .form-control {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .profile-info .form-control:disabled {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .profile-info .form-control:disabled {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-info .form-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+            text-align: left;
+        }
+
+        .profile-info .form-group {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .profile-info .form-group:hover {
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .edit-btn:hover {
+            color: var(--secondary-color);
+        }
+
+        .user-dropdown .dropdown-menu {
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary-color);
+        }
+
+        .user-dropdown .dropdown-item {
+            color: var(--text-color);
+        }
+
+        .user-dropdown .dropdown-item:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .user-dropdown .dropdown-item i {
+            width: 20px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .profile-actions {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-actions .btn {
+            min-width: 100px;
+        }
+
+        .profile-actions .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .profile-actions .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-footer {
+            border-top-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .modal-footer {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown user-dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container profile-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="profile-sidebar">
+                    <div class="nav flex-column nav-pills">
+                        <a class="nav-link active" href="#profile" data-bs-toggle="pill">
+                            <i class="fas fa-user"></i> Thông tin cá nhân
+                        </a>
+                        <a class="nav-link" href="#change-password" data-bs-toggle="pill">
+                            <i class="fas fa-key"></i> Đổi mật khẩu
+                        </a>
+                        <a class="nav-link" href="#lock-account" data-bs-toggle="pill">
+                            <i class="fas fa-lock"></i> Khóa tài khoản
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="col-lg-9">
+                <div class="profile-content">
+                    <div class="tab-content">
+                        <!-- Profile Information -->
+                        <div class="tab-pane fade show active" id="profile">
+                            <div class="profile-header">
+                                <h2>Thông tin cá nhân</h2>
+                                <button class="edit-btn" id="editProfileBtn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+
+                            <div class="row profile-info">
+                                <div class="col-md-4">
+                                    <div class="profile-avatar-container">
+                                        <img src="https://via.placeholder.com/150" alt="Avatar" class="profile-avatar" id="profileAvatar">
+                                        <label class="avatar-upload" id="avatarUpload">
+                                            <i class="fas fa-camera"></i>
+                                            <input type="file" id="avatarInput" accept="image/*">
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Ngày sinh</label>
+                                        <input type="date" class="form-control" value="1990-01-01" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Số điện thoại</label>
+                                        <input type="tel" class="form-control" value="0123456789" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" value="user@example.com" disabled>
+                                    </div>
+                                
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" value="Nguyễn Văn A" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Địa chỉ</label>
+                                        <textarea class="form-control" rows="3" disabled>123 Đường ABC, Quận XYZ, TP. HCM</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tiểu sử</label>
+                                        <textarea class="form-control" rows="5" disabled>Là một người đam mê đọc sách và chia sẻ kiến thức...</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="profile-actions" style="display: none;">
+                                <button type="button" class="btn btn-secondary" id="cancelBtn">Hủy</button>
+                                <button type="button" class="btn btn-primary" id="saveBtn">Lưu</button>
+                            </div>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="tab-pane fade" id="change-password">
+                            <h2 class="mb-4">Đổi mật khẩu</h2>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Mật khẩu hiện tại</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Mật khẩu mới</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Xác nhận mật khẩu mới</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Cập nhật mật khẩu</button>
+                            </form>
+                        </div>
+
+                        <!-- Lock Account -->
+                        <div class="tab-pane fade" id="lock-account">
+                            <h2 class="mb-4">Khóa tài khoản</h2>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Lưu ý: Khi khóa tài khoản, bạn sẽ không thể đăng nhập cho đến khi liên hệ với quản trị viên để mở khóa.
+                            </div>
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Lý do khóa tài khoản</label>
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-danger">Khóa tài khoản</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận thay đổi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn lưu những thay đổi này?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirmSaveBtn">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Confirmation Modal -->
+    <div class="modal fade" id="passwordConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận đổi mật khẩu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn thay đổi mật khẩu?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirmPasswordBtn">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Profile edit functionality
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const profileInputs = document.querySelectorAll('#profile .form-control');
+        const profileActions = document.querySelector('.profile-actions');
+        const avatarUpload = document.getElementById('avatarUpload');
+        const avatarInput = document.getElementById('avatarInput');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        const passwordConfirmModal = new bootstrap.Modal(document.getElementById('passwordConfirmModal'));
+        const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+        const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
+        
+        let isEditing = false;
+        let originalValues = {};
+
+        // Store original values
+        profileInputs.forEach(input => {
+            originalValues[input.id || input.name] = input.value;
+        });
+
+        // Handle edit button click
+        editProfileBtn.addEventListener('click', () => {
+            isEditing = !isEditing;
+            profileInputs.forEach(input => {
+                input.disabled = !isEditing;
+            });
+            editProfileBtn.innerHTML = isEditing ? 
+                '<i class="fas fa-save"></i>' : 
+                '<i class="fas fa-edit"></i>';
+            profileActions.style.display = isEditing ? 'flex' : 'none';
+            avatarUpload.style.display = isEditing ? 'flex' : 'none';
+        });
+
+        // Handle avatar upload
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    profileAvatar.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle cancel button
+        cancelBtn.addEventListener('click', () => {
+            profileInputs.forEach(input => {
+                input.value = originalValues[input.id || input.name];
+            });
+            profileAvatar.src = 'https://via.placeholder.com/150';
+            isEditing = false;
+            profileInputs.forEach(input => {
+                input.disabled = true;
+            });
+            editProfileBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            profileActions.style.display = 'none';
+            avatarUpload.style.display = 'none';
+        });
+
+        // Handle save button
+        saveBtn.addEventListener('click', () => {
+            confirmModal.show();
+        });
+
+        // Handle confirm save
+        confirmSaveBtn.addEventListener('click', () => {
+            profileInputs.forEach(input => {
+                originalValues[input.id || input.name] = input.value;
+            });
+            isEditing = false;
+            profileInputs.forEach(input => {
+                input.disabled = true;
+            });
+            editProfileBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            profileActions.style.display = 'none';
+            avatarUpload.style.display = 'none';
+            
+            confirmModal.hide();
+            alert('Thông tin đã được cập nhật thành công!');
+        });
+
+        // Handle password change form
+        const passwordForm = document.querySelector('#change-password form');
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            passwordConfirmModal.show();
+        });
+
+        // Handle password confirmation
+        confirmPasswordBtn.addEventListener('click', () => {
+            // Here you would typically send the password change request to your server
+            passwordConfirmModal.hide();
+            passwordForm.reset();
+            alert('Mật khẩu đã được thay đổi thành công!');
+        });
+    </script>
+</body>
+</html>

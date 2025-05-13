@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SenseLib - Thư viện trực tuyến</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <style>
+        :root {
+            --primary-color: #40E0D0;
+            --secondary-color: #20B2AA;
+            --text-color: #333;
+            --white: #ffffff;
+            --background: #ffffff;
+            --card-bg: #ffffff;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #20B2AA;
+            --secondary-color: #40E0D0;
+            --text-color: #ffffff;
+            --background: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .navbar {
+            background-color: var(--card-bg) !important;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .nav-link {
+            color: var(--text-color) !important;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: var(--primary-color) !important;
+            color: var(--white) !important;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .introduction {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 3rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .filters {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .search-bar {
+            border: 2px solid var(--primary-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .filter-group h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .book-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .book-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .book-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .book-info p {
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .book-stats {
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .book-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .detail-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0;
+            width: 100%;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .detail-btn:hover {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+        
+        .contact-section {
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            box-shadow: 0 2px 5px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .filters {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">SenseLib</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user-plus"></i> Đăng ký</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-5 pt-5">
+        <!-- Introduction Section -->
+        <section class="introduction">
+            <h1 class="display-4 mb-4">Chào mừng đến với SenseLib</h1>
+            <p class="lead">Thư viện trực tuyến của chúng tôi cung cấp kho tài liệu phong phú, đa dạng với hàng nghìn đầu sách và tài liệu chất lượng cao. Khám phá, học hỏi và phát triển cùng chúng tôi!</p>
+        </section>
+
+        <!-- Search and Filter Section -->
+        <div class="row">
+            <!-- Filters -->
+            <div class="col-lg-3">
+                <aside class="filters">
+                    <input type="text" class="form-control search-bar mb-4" placeholder="Tìm kiếm sách, tài liệu...">
+                    
+                    <div class="filter-group mb-4">
+                        <h3>Thể loại</h3>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="science">
+                            <label class="form-check-label" for="science">Khoa học</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="literature">
+                            <label class="form-check-label" for="literature">Văn học</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="technology">
+                            <label class="form-check-label" for="technology">Công nghệ</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group mb-4">
+                        <h3>Định dạng</h3>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="pdf">
+                            <label class="form-check-label" for="pdf">PDF</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="epub">
+                            <label class="form-check-label" for="epub">EPUB</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="doc">
+                            <label class="form-check-label" for="doc">DOC</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3>Ngôn ngữ</h3>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="vietnamese">
+                            <label class="form-check-label" for="vietnamese">Tiếng Việt</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="english">
+                            <label class="form-check-label" for="english">Tiếng Anh</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="french">
+                            <label class="form-check-label" for="french">Tiếng Pháp</label>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Books Display -->
+            <div class="col-lg-9">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <!-- Book Display -->
+                    <div class="col">
+                        <div class="book-card">
+                            <img src="/img/flower.jpg" alt="Book cover" class="book-image">
+                            <div class="book-info">
+                                <h3>Tiêu đề sách</h3>
+                                <p class="mb-2">Tác giả: John Doe</p>
+                                <p class="mb-2">NXB: ABC Publishing</p>
+                                <div class="book-stats">
+                                    <span><i class="fas fa-eye"></i> 1.2k</span>
+                                    <span><i class="fas fa-star"></i> 4.5</span>
+                                    <span><i class="fas fa-download"></i> 500</span>
+                                </div>
+                                <p class="mb-3">Đăng ngày: 01/01/2024</p>
+                                <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
+                                    <i class="fas fa-info-circle"></i> Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="book-card">
+                            <img src="https://via.placeholder.com/300x450" alt="Book cover" class="book-image">
+                            <div class="book-info">
+                                <h3>Tiêu đề sách</h3>
+                                <p class="mb-2">Tác giả: Jane Smith</p>
+                                <p class="mb-2">NXB: XYZ Publishing</p>
+                                <div class="book-stats">
+                                    <span><i class="fas fa-eye"></i> 800</span>
+                                    <span><i class="fas fa-star"></i> 4.8</span>
+                                    <span><i class="fas fa-download"></i> 300</span>
+                                </div>
+                                <p class="mb-3">Đăng ngày: 02/01/2024</p>
+                                <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
+                                    <i class="fas fa-info-circle"></i> Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="book-card">
+                            <img src="https://via.placeholder.com/300x450" alt="Book cover" class="book-image">
+                            <div class="book-info">
+                                <h3>Tiêu đề sách</h3>
+                                <p class="mb-2">Tác giả: Mike Johnson</p>
+                                <p class="mb-2">NXB: DEF Publishing</p>
+                                <div class="book-stats">
+                                    <span><i class="fas fa-eye"></i> 1.5k</span>
+                                    <span><i class="fas fa-star"></i> 4.2</span>
+                                    <span><i class="fas fa-download"></i> 450</span>
+                                </div>
+                                <p class="mb-3">Đăng ngày: 03/01/2024</p>
+                                <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
+                                    <i class="fas fa-info-circle"></i> Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <h2 class="text-center mb-4">Liên hệ với chúng tôi</h2>
+            <form class="contact-form">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Họ và tên</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Nội dung</label>
+                            <textarea class="form-control" id="message" rows="5" required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

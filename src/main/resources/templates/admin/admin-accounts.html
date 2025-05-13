@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tài khoản - SenseLib Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: var(--background);
+        }
+        .admin-sidebar {
+            min-height: 100vh;
+            background: var(--card-bg);
+            box-shadow: 2px 0 8px var(--shadow);
+            padding: 2rem 1rem 1rem 1rem;
+        }
+        .admin-sidebar .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .admin-sidebar .nav-link.active, .admin-sidebar .nav-link:hover {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .admin-header h2 {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .admin-content {
+            padding: 2rem;
+        }
+        .table thead th {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+        .table tbody tr {
+            background: var(--card-bg);
+        }
+        .table td, .table th {
+            vertical-align: middle;
+        }
+        .badge-status {
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.3em 1em;
+        }
+        .badge-active { background: #28a745; color: #fff; }
+        .badge-inactive { background: #dc3545; color: #fff; }
+        .badge-pending { background: #ffc107; color: #333; }
+        .stat-box {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px var(--shadow);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box h4 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-box p {
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        @media (max-width: 991px) {
+            .admin-sidebar { min-height: auto; padding: 1rem; }
+            .admin-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-lg-2 col-md-3 admin-sidebar d-flex flex-column">
+            <a class="navbar-brand mb-4" href="home.html">SenseLib Admin</a>
+            <a class="nav-link active" href="#"><i class="fas fa-users me-2"></i>Quản lý tài khoản</a>
+            <a class="nav-link" href="#"><i class="fas fa-book me-2"></i>Quản lý tài liệu</a>
+            <a class="nav-link" href="#"><i class="fas fa-chart-bar me-2"></i>Thống kê</a>
+            <a class="nav-link mt-auto" href="#"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a>
+        </nav>
+        <!-- Main Content -->
+        <main class="col-lg-10 col-md-9 admin-content">
+            <div class="admin-header">
+                <h2>Quản lý tài khoản</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-user-plus me-2"></i>Thêm mới tài khoản
+                </button>
+            </div>
+            <!-- Thống kê -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h4>120</h4>
+                        <p>Tổng số tài khoản</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h4>110</h4>
+                        <p>Đang hoạt động</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h4>8</h4>
+                        <p>Đã khóa</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <h4>2</h4>
+                        <p>Chờ xác thực</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Bảng tài khoản -->
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Nguyễn Văn A</td>
+                            <td>vana@example.com</td>
+                            <td>Quản trị viên</td>
+                            <td><span class="badge badge-status badge-active">Hoạt động</span></td>
+                            <td>01/04/2024</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUserModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Trần Thị B</td>
+                            <td>thib@example.com</td>
+                            <td>Người dùng</td>
+                            <td><span class="badge badge-status badge-inactive">Đã khóa</span></td>
+                            <td>15/03/2024</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUserModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Lê Văn C</td>
+                            <td>levanc@example.com</td>
+                            <td>Người dùng</td>
+                            <td><span class="badge badge-status badge-pending">Chờ xác thực</span></td>
+                            <td>10/03/2024</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUserModal"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                        <!-- Thêm các dòng khác nếu cần -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modal Thêm tài khoản -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addUserModalLabel">Thêm mới tài khoản</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Vai trò</label>
+            <select class="form-select" required>
+              <option value="">Chọn vai trò</option>
+              <option value="admin">Quản trị viên</option>
+              <option value="user">Người dùng</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sửa tài khoản -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h5 class="modal-title" id="editUserModalLabel">Chỉnh sửa tài khoản</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" class="form-control" value="Nguyễn Văn A" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" value="vana@example.com" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Vai trò</label>
+            <select class="form-select" required>
+              <option value="admin" selected>Quản trị viên</option>
+              <option value="user">Người dùng</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" required>
+              <option value="active" selected>Hoạt động</option>
+              <option value="inactive">Đã khóa</option>
+              <option value="pending">Chờ xác thực</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

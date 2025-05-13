@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SenseLib - Chi tiết tài liệu</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        :root {
+            --primary-color: #40E0D0;
+            --secondary-color: #20B2AA;
+            --text-color: #333;
+            --white: #fff;
+            --card-bg: #fff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --text-color: #fff;
+            --card-bg: #2d2d2d;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #1a1a1a;
+        }
+
+        .navbar {
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: bold;
+        }
+
+        .document-container {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .document-info {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .document-cover {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .document-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .stat-item i {
+            color: var(--primary-color);
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .document-actions .btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rating-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .rating-section {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.5rem;
+        }
+
+        .rating-stars .far {
+            color: #ddd;
+        }
+
+        .comments-section {
+            margin-top: 2rem;
+        }
+
+        .comment {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-user img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .related-documents {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .related-doc {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .related-doc {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .related-doc:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .related-doc:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .related-doc img {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .related-doc-info {
+            flex: 1;
+        }
+
+        .related-doc-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .related-doc-author {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .user-dropdown .dropdown-menu {
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary-color);
+        }
+
+        .user-dropdown .dropdown-item {
+            color: var(--text-color);
+        }
+
+        .user-dropdown .dropdown-item:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .user-dropdown .dropdown-item i {
+            width: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item dropdown user-dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle fa-lg"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container document-container">
+        <div class="row">
+            <!-- Document Information -->
+            <div class="col-lg-8">
+                <div class="document-info">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="/img/flower.jpg" alt="Document Cover" class="document-cover">
+                        </div>
+                        <div class="col-md-8">
+                            <h1 class="mb-3">Tên tài liệu</h1>
+                            <p class="text-muted">Tác giả: Nguyễn Văn A</p>
+                            <p class="text-muted">Nhà xuất bản: XYZ Publisher</p>
+                            <p class="text-muted">Năm xuất bản: 2023</p>
+                            
+                            <div class="document-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-eye"></i>
+                                    <span>1,234 lượt xem</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-star"></i>
+                                    <span>4.5/5</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-download"></i>
+                                    <span>567 lượt tải</span>
+                                </div>
+                            </div>
+
+                            <div class="document-actions">
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-download"></i>
+                                    Tải xuống
+                                </button>
+                                <button class="btn btn-outline-primary">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Xem PDF
+                                </button>
+                                <button class="btn btn-outline-danger">
+                                    <i class="fas fa-heart"></i>
+                                    Yêu thích
+                                </button>
+                            </div>
+
+                            <div class="rating-section">
+                                <h4>Đánh giá của bạn</h4>
+                                <div class="rating-stars mb-3">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea class="form-control" rows="3" placeholder="Viết đánh giá của bạn..."></textarea>
+                                </div>
+                                <button class="btn btn-primary">Gửi đánh giá</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comments-section">
+                        <h4>Bình luận (3)</h4>
+                        <div class="comment">
+                            <div class="comment-header">
+                                <div class="comment-user">
+                                    <img src="https://via.placeholder.com/40" alt="User Avatar">
+                                    <div>
+                                        <h6 class="mb-0">Nguyễn Văn B</h6>
+                                        <small class="text-muted">2 giờ trước</small>
+                                    </div>
+                                </div>
+                                <div class="rating-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="mb-0">Tài liệu rất hữu ích và dễ hiểu. Cảm ơn tác giả đã chia sẻ!</p>
+                        </div>
+
+                        <div class="comment">
+                            <div class="comment-header">
+                                <div class="comment-user">
+                                    <img src="https://via.placeholder.com/40" alt="User Avatar">
+                                    <div>
+                                        <h6 class="mb-0">Trần Thị C</h6>
+                                        <small class="text-muted">5 giờ trước</small>
+                                    </div>
+                                </div>
+                                <div class="rating-stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="mb-0">Nội dung hay nhưng có một số chỗ cần làm rõ thêm.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Documents -->
+            <div class="col-lg-4">
+                <div class="related-documents">
+                    <h4 class="mb-4">Tài liệu liên quan</h4>
+                    
+                    <div class="related-doc">
+                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
+                        <div class="related-doc-info">
+                            <div class="related-doc-title">Tài liệu liên quan 1</div>
+                            <div class="related-doc-author">Tác giả: Nguyễn Văn D</div>
+                        </div>
+                    </div>
+
+                    <div class="related-doc">
+                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
+                        <div class="related-doc-info">
+                            <div class="related-doc-title">Tài liệu liên quan 2</div>
+                            <div class="related-doc-author">Tác giả: Trần Văn E</div>
+                        </div>
+                    </div>
+
+                    <div class="related-doc">
+                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
+                        <div class="related-doc-info">
+                            <div class="related-doc-title">Tài liệu liên quan 3</div>
+                            <div class="related-doc-author">Tác giả: Lê Thị F</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Rating stars functionality
+        const ratingStars = document.querySelectorAll('.rating-stars i');
+        ratingStars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                ratingStars.forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
