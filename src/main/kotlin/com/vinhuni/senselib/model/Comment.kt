@@ -1,5 +1,6 @@
-package com.vinhuni.senselib
+package com.vinhuni.senselib.model
 
+import com.vinhuni.senselib.model.User
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.OnDelete

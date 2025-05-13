@@ -1,4 +1,4 @@
-package com.vinhuni.senselib
+package com.vinhuni.senselib.model
 
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault

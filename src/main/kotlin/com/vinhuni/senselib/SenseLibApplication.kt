@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class SenseLibApplication
 
 fun main(args: Array<String>) {
-	runApplication<SenseLibApplication>(*args)
+    runApplication<SenseLibApplication>(*args)
 }
