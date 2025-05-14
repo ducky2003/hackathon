@@ -233,7 +233,7 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#">SenseLib</a>
+            <a class="navbar-brand" href="/">SenseLib</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -253,7 +253,9 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                            <li><a class="dropdown-item" th:href="@{/bookmarks}"><i class="fas fa-bookmark me-2"></i>Đánh dấu</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-bookmark me-2"></i>Tải lên tài liệu</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
                             <li sec:authorize="hasRole('admin')">
                                 <a class="dropdown-item" th:href="@{/admin}">
                                     <i class="fas fa-user-shield me-2"></i>Trang quản trị
@@ -292,7 +294,19 @@
             <!-- Filters -->
             <div class="col-lg-3">
                 <aside class="filters">
-                    <input type="text" class="form-control search-bar mb-4" placeholder="Tìm kiếm sách, tài liệu...">
+                    <!-- Search bar with filtering -->
+                    <form id="searchForm" action="#" th:action="@{/home}" method="get">
+                        <input type="hidden" name="page" value="0">
+                        <input type="hidden" name="size" value="6">
+                        <input type="hidden" id="categoryInput" name="category" th:value="${selectedCategory}">
+
+                        <input type="text" class="form-control search-bar mb-4" placeholder="Tìm kiếm sách, tài liệu..."
+                               name="search" th:value="${searchKeyword}" id="searchInput">
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-search me-2"></i> Tìm kiếm
+                        </button>
+                    </form>
                     
                     <div class="filter-group mb-4">
                         <h3>Thể loại</h3>
@@ -337,6 +351,9 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Add Apply Filter button -->
+                        <button id="applyFilterBtn" class="btn btn-primary w-100 mt-3">Áp dụng bộ lọc</button>
 
                     </div>
 
@@ -409,14 +426,14 @@
                 <div class="pagination">
                     <ul class="pagination">
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                            <a class="page-link" th:href="@{/home(page=${currentPage - 1}, size=6, category=${selectedCategory})}">Previous</a>
+                            <a class="page-link" th:href="@{/home(page=${currentPage - 1}, size=6, category=${selectedCategory}, search=${searchKeyword})}">Previous</a>
                         </li>
                         <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                             th:classappend="${i == currentPage} ? 'active'">
-                            <a class="page-link" th:href="@{/home(page=${i}, size=6, category=${selectedCategory})}" th:text="${i + 1}">1</a>
+                            <a class="page-link" th:href="@{/home(page=${i}, size=6, category=${selectedCategory}, search=${searchKeyword})}" th:text="${i + 1}">1</a>
                         </li>
                         <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{/home(page=${currentPage + 1}, size=6, category=${selectedCategory})}">Next</a>
+                            <a class="page-link" th:href="@{/home(page=${currentPage + 1}, size=6, category=${selectedCategory}, search=${searchKeyword})}">Next</a>
                         </li>
                     </ul>
                 </div>
@@ -480,45 +497,52 @@
         });
         document.addEventListener('DOMContentLoaded', function() {
             const categoryRadios = document.querySelectorAll('.category-radio');
+            const applyFilterBtn = document.getElementById('applyFilterBtn');
+            const filtersSection = document.querySelector('.filters');
+            const categoryInput = document.getElementById('categoryInput');
+            const searchForm = document.getElementById('searchForm');
 
-            // Handle radio button changes
-            categoryRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        applyFilter(this.value);
-                    }
+            // Only initialize if elements exist
+            if (applyFilterBtn) {
+                applyFilterBtn.addEventListener('click', function() {
+                    applyFilter();
                 });
-            });
-
-            function applyFilter(categoryId) {
-                // Build the URL with the selected category
-                let url = new URL(window.location.href);
-                url.searchParams.delete('category');
-
-                if (categoryId) {
-                    url.searchParams.set('category', categoryId);
-                }
-
-                // Reset to first page when filtering
-                url.searchParams.set('page', '0');
-
-                // Navigate to the filtered URL
-                window.location.href = url.toString();
             }
 
-            // Add clear filter button
-            const filtersSection = document.querySelector('.filters');
-            const clearButton = document.createElement('button');
-            clearButton.className = 'btn btn-outline-secondary w-100 mt-3';
-            clearButton.textContent = 'Xóa bộ lọc';
-            clearButton.addEventListener('click', function() {
-                let url = new URL(window.location.href);
-                url.searchParams.delete('category');
-                url.searchParams.set('page', '0');
-                window.location.href = url.toString();
-            });
+            function applyFilter() {
+                // Get selected category
+                let selectedCategory = null;
+                categoryRadios.forEach(radio => {
+                    if (radio.checked) {
+                        selectedCategory = radio.value;
+                    }
+                });
 
-            filtersSection.appendChild(clearButton);
+                // Update hidden category input on search form
+                if (selectedCategory) {
+                    categoryInput.value = selectedCategory;
+                } else {
+                    categoryInput.value = '';
+                }
+
+                // Submit the search form with the category filter
+                searchForm.submit();
+            }
+
+            // Add clear filter button if filters section exists
+            if (filtersSection && !document.querySelector('.clear-filter-btn')) {
+                const clearButton = document.createElement('button');
+                clearButton.className = 'btn btn-outline-secondary w-100 mt-3 clear-filter-btn';
+                clearButton.textContent = 'Xóa bộ lọc';
+                clearButton.addEventListener('click', function() {
+                    // Clear category and search
+                    categoryInput.value = '';
+                    document.getElementById('searchInput').value = '';
+                    searchForm.submit();
+                });
+
+                filtersSection.appendChild(clearButton);
+            }
         });
     </script>
 </body>

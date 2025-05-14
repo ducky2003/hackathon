@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -312,7 +312,7 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <a class="navbar-brand" href="/">SenseLib</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -386,36 +386,59 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Tiêu đề tài liệu</label>
-                            <input type="text" class="form-control" required>
+                            <input type="text" class="form-control" name="title" required>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Tác giả</label>
-                            <input type="text" class="form-control" required>
+                            <select class="form-select" name="authorId" required>
+                                <option value="">Chọn tác giả</option>
+                                <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.authorName}"></option>
+                            </select>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label">Nhà xuất bản</label>
-                            <input type="text" class="form-control">
+                            <select class="form-select" name="publisherId" required>
+                                <option value="">Chọn nhà xuất bản</option>
+                                <option th:each="publisher : ${publishers}" th:value="${publisher.id}" th:text="${publisher.publisherName}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Năm xuất bản</label>
+                            <input type="number" class="form-control" name="publicationYear" min="1900" max="2099">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Số trang</label>
+                            <input type="number" class="form-control" name="pageCount" min="1">
                         </div>
                     </div>
+
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Danh mục</label>
-                            <select class="form-select" required>
+                            <select class="form-select" name="categoryId" required>
                                 <option value="">Chọn danh mục</option>
-                                <option value="education">Giáo dục</option>
-                                <option value="technology">Công nghệ</option>
-                                <option value="science">Khoa học</option>
-                                <option value="literature">Văn học</option>
-                                <option value="other">Khác</option>
+                                <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.categoryName}"></option>
                             </select>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Thẻ</label>
-                            <input type="text" class="form-control" placeholder="Nhập thẻ, phân cách bằng dấu phẩy">
+                            <label class="form-label">Hình ảnh mô tả</label>
+                            <input type="file" class="form-control" name="coverImage" accept="image/*">
+                            <div class="mt-2" id="coverPreview"></div>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">ISBN (nếu có)</label>
+                            <input type="text" class="form-control" name="isbn">
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Mô tả</label>
-                            <textarea class="form-control" rows="3" required></textarea>
+                            <textarea class="form-control" name="description" rows="3" required></textarea>
                         </div>
                     </div>
                 </div>
@@ -491,7 +514,18 @@
                 localStorage.setItem('theme', 'dark');
             }
         });
-
+        // Add this to your existing script
+        document.querySelector('input[name="coverImage"]').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('coverPreview');
+                    preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-height: 150px">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
         // File upload functionality
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');

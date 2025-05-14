@@ -1,6 +1,7 @@
 package com.vinhuni.senselib.service
 
 import com.vinhuni.senselib.model.Category
+import com.vinhuni.senselib.model.Publisher
 import com.vinhuni.senselib.repository.CategoryRepository
 import org.springframework.stereotype.Service
 
@@ -29,5 +30,10 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
         }
 
         return childCategoriesMap
+    }
+    fun getCategoryById(id: Int): Category {
+        return categoryRepository.findById(id).orElseThrow {
+            IllegalArgumentException("Không tìm thấy danh mục với ID: $id")
+        }
     }
 }

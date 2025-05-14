@@ -14,6 +14,13 @@ class UserService(
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
+    fun getUserByUsername(username: String): User? {
+        return userRepository.findByUsername(username)
+    }
+
+    fun saveUser(user: User): User {
+        return userRepository.save(user)
+    }
     fun registerUser(userDto: UserRegistrationDto): User {
         // Kiểm tra email đã tồn tại chưa
         if (userRepository.existsByEmail(userDto.email)) {

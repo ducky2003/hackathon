@@ -12,10 +12,15 @@ interface BookRepository : JpaRepository<Book, Int> {
 
     @Query("SELECT COUNT(d) FROM Download d WHERE d.book.id = :bookId")
     fun countDownloadsByBookId(bookId: Int): Int
-    @Query("SELECT DISTINCT b FROM Book b JOIN b.category c WHERE c.id IN :categoryIds AND b.status = 'active' ORDER BY b.createdAt DESC")
-    fun findByCategories(@Param("categoryIds") categoryIds: List<Int>, pageable: Pageable): Page<Book>
+    @Query("SELECT DISTINCT b FROM Book b WHERE b.category.id = :categoryId AND b.status = 'available' ORDER BY b.createdAt DESC")
+    fun findByCategoryId(@Param("categoryId") categoryId: Int, pageable: Pageable): Page<Book>
+
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.book.id = :bookId")
     fun getAverageRatingByBookId(bookId: Int): Double?
-    @Query("SELECT DISTINCT b FROM Book b WHERE b.category.id = :categoryId AND b.status = 'active' ORDER BY b.createdAt DESC")
-    fun findByCategoryId(@Param("categoryId") categoryId: Int, pageable: Pageable): Page<Book>
+
+    @Query("SELECT DISTINCT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND b.status = 'available' ORDER BY b.createdAt DESC")
+    fun findByTitleContaining(@Param("keyword") keyword: String, pageable: Pageable): Page<Book>
+
+    @Query("SELECT DISTINCT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND b.category.id = :categoryId AND b.status = 'available' ORDER BY b.createdAt DESC")
+    fun findByTitleContainingAndCategoryId(@Param("keyword") keyword: String, @Param("categoryId") categoryId: Int, pageable: Pageable): Page<Book>
 }
