@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,26 +266,26 @@
                 <div class="document-info">
                     <div class="row">
                         <div class="col-md-4">
-                            <img src="/img/flower.jpg" alt="Document Cover" class="document-cover">
+                            <img th:src="${book.coverImage != null ? book.coverImage : '/img/auth-bg.jpg'}" alt="Document Cover" class="document-cover">
                         </div>
                         <div class="col-md-8">
-                            <h1 class="mb-3">Tên tài liệu</h1>
-                            <p class="text-muted">Tác giả: Nguyễn Văn A</p>
-                            <p class="text-muted">Nhà xuất bản: XYZ Publisher</p>
-                            <p class="text-muted">Năm xuất bản: 2023</p>
-                            
+                            <h1 class="mb-3" th:text="${book.title}">Tên tài liệu</h1>
+                            <p class="text-muted" th:text="'Tác giả: ' + ${#strings.isEmpty(authors) ? 'Không có' : #strings.listJoin(authors, ', ')}">Tác giả: Nguyễn Văn A</p>
+                            <p class="text-muted" th:text="'Nhà xuất bản: ' + ${book.publisher?.publisherName ?: 'Không có'}">Nhà xuất bản: XYZ Publisher</p>
+                            <p class="text-muted" th:text="'Đăng ngày: ' + ${#temporals.format(book.createdAt, 'dd/MM/yyyy')}">Năm xuất bản: 2023</p>
+
                             <div class="document-stats">
                                 <div class="stat-item">
                                     <i class="fas fa-eye"></i>
-                                    <span>1,234 lượt xem</span>
+                                    <span th:text="${book.viewCount} + ' lượt xem'">1,234 lượt xem</span>
                                 </div>
                                 <div class="stat-item">
                                     <i class="fas fa-star"></i>
-                                    <span>4.5/5</span>
+                                    <span th:text="${#numbers.formatDecimal(rating, 1, 1)} + '/5'">4.5/5</span>
                                 </div>
                                 <div class="stat-item">
                                     <i class="fas fa-download"></i>
-                                    <span>567 lượt tải</span>
+                                    <span th:text="${downloadCount} + ' lượt tải'">567 lượt tải</span>
                                 </div>
                             </div>
 

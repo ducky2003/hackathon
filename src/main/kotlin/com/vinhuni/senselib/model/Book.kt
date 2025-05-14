@@ -64,4 +64,8 @@ open class Book {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
     open var createdBy: User? = null
+
+    @Column(name = "view_count")
+    @ColumnDefault("0")
+    open var viewCount: Int = 0
 }
