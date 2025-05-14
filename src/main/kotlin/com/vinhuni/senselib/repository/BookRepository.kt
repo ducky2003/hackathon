@@ -23,4 +23,11 @@ interface BookRepository : JpaRepository<Book, Int> {
 
     @Query("SELECT DISTINCT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) AND b.category.id = :categoryId AND b.status = 'available' ORDER BY b.createdAt DESC")
     fun findByTitleContainingAndCategoryId(@Param("keyword") keyword: String, @Param("categoryId") categoryId: Int, pageable: Pageable): Page<Book>
+
+    @Query(value = "SELECT * FROM books WHERE category_id = :categoryId AND id != :bookId AND status = 'available' ORDER BY RAND() LIMIT :limit", nativeQuery = true)
+    fun findRandomBooksByCategoryIdAndNotBookId(
+        @Param("categoryId") categoryId: Int,
+        @Param("bookId") bookId: Int,
+        @Param("limit") limit: Int
+    ): List<Book>
 }

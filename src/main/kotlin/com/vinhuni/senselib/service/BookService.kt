@@ -98,9 +98,38 @@ class BookService(
         return mapBooksToDTO(books)
     }
     fun saveBook(book: Book): Book {
+        if (book.id != 0) {
+            println("Cảnh báo: Book đã có ID: ${book.id}, đang đặt lại về 0")
+            book.id = 0
+        }
+        println("Lưu book: $book")
         return bookRepository.save(book)
     }
+    fun getRandomRelatedBooks(categoryId: Int, bookId: Int, limit: Int = 4): List<BookDTO> {
+        println("Tìm tài liệu liên quan cho category=$categoryId, bookId=$bookId, limit=$limit")
+        val relatedBooks = bookRepository.findRandomBooksByCategoryIdAndNotBookId(categoryId, bookId, limit)
+        println("Tìm thấy ${relatedBooks.size} tài liệu liên quan")
 
+        return relatedBooks.map { book ->
+            val authors = bookAuthorRepository.findByBookId(book.id!!)
+                .mapNotNull { it.author?.authorName }
+
+            val downloadCount = bookRepository.countDownloadsByBookId(book.id!!)
+            val rating = bookRepository.getAverageRatingByBookId(book.id!!) ?: 0.0
+
+            BookDTO(
+                id = book.id,
+                title = book.title,
+                authors = authors,
+                publisherName = book.publisher?.publisherName,
+                coverImage = book.coverImage,
+                createdAt = book.createdAt,
+                viewCount = book.viewCount,
+                downloadCount = downloadCount,
+                rating = rating
+            )
+        }
+    }
     private fun mapBooksToDTO(books: Page<Book>): Page<BookDTO> {
         return books.map { book ->
             val authors = bookAuthorRepository.findByBookId(book.id!!)

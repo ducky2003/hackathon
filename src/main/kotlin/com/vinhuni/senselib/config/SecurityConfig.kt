@@ -22,9 +22,10 @@ class SecurityConfig {
         http
             .authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers("/assets/**", "/img/**", "/js/**", "/css/**").permitAll()
+                    .requestMatchers("/assets/**", "/img/**", "/js/**", "/css/**","/uploads/**").permitAll()
                     .requestMatchers("/register", "/login", "/perform-login").permitAll()
                     .requestMatchers("/admin/**").hasRole("admin")
+                    .requestMatchers("/upload").authenticated()
                     .anyRequest().authenticated()
             }
             .formLogin { form ->
@@ -45,4 +46,5 @@ class SecurityConfig {
 
         return http.build()
     }
+
 }

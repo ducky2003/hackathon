@@ -21,6 +21,7 @@ import com.vinhuni.senselib.model.BookAuthorId
 import com.vinhuni.senselib.service.BookAuthorService
 import com.vinhuni.senselib.service.UserService
 import org.springframework.util.StringUtils
+import java.nio.file.Paths
 
 
 import java.time.Instant
@@ -48,7 +49,7 @@ class UploadController(
     @PostMapping("/upload")
     fun uploadDocument(
         @RequestParam("file") file: MultipartFile,
-        @RequestParam("coverImage") coverImage: MultipartFile?,
+        @RequestParam("coverImage", required = false) coverImage: MultipartFile?,
         @RequestParam("title") title: String,
         @RequestParam("authorId") authorId: Int,
         @RequestParam("publisherId") publisherId: Int,
@@ -66,41 +67,61 @@ class UploadController(
         }
 
         try {
+            // Log để debug
+            println("Bắt đầu xử lý tải lên với file: ${file.originalFilename}, kích thước: ${file.size}")
+
             // Get current user
             val username = authentication.name
             val user = userService.getUserByUsername(username)
                 ?: throw IllegalStateException("Không tìm thấy thông tin người dùng")
 
-            // Handle document file
-            val fileDir = "uploads/documents/"
-            val fileName = StringUtils.cleanPath(file.originalFilename ?: "document.pdf")
-            val uniqueFileName = System.currentTimeMillis().toString() + "_" + fileName
-            val filePath = fileDir + uniqueFileName
+            // Lưu trữ trong thư mục static
+            val rootPath = System.getProperty("user.dir")
+            val staticPath = Paths.get(rootPath, "src", "main", "resources", "static")
+            val uploadPath = Paths.get(staticPath.toString(), "/uploads")
+            val imgPath = Paths.get(staticPath.toString(), "/img")
 
-            // Handle cover image if provided
-            var coverImagePath: String? = null
-            if (coverImage != null && !coverImage.isEmpty) {
-                val imgDir = "uploads/covers/"
-                val imgFileName = StringUtils.cleanPath(coverImage.originalFilename ?: "cover.jpg")
-                val uniqueImgName = System.currentTimeMillis().toString() + "_" + imgFileName
-                coverImagePath = imgDir + uniqueImgName
-                Files.createDirectories(Path.of(imgDir))
-                Files.copy(
-                    coverImage.inputStream,
-                    Path.of(imgDir, uniqueImgName),
-                    StandardCopyOption.REPLACE_EXISTING
-                )
+            println("Đường dẫn uploads: $uploadPath")
+            println("Kiểm tra thư mục uploads tồn tại: ${Files.exists(uploadPath)}")
+
+            // Tạo thư mục nếu chưa tồn tại
+            if (!Files.exists(uploadPath)) {
+                println("Tạo thư mục uploads")
+                Files.createDirectories(uploadPath)
+            }
+            if (!Files.exists(imgPath)) {
+                println("Tạo thư mục img")
+                Files.createDirectories(imgPath)
             }
 
-            // Save document file
-            Files.createDirectories(Path.of(fileDir))
-            Files.copy(
-                file.inputStream,
-                Path.of(fileDir, uniqueFileName),
-                StandardCopyOption.REPLACE_EXISTING
-            )
+            // Xử lý tệp tài liệu với tên duy nhất
+            val uniqueFilename = System.currentTimeMillis().toString() + "_" +
+                    StringUtils.cleanPath(file.originalFilename ?: "document.pdf")
+            val documentPath = uploadPath.resolve(uniqueFilename)
 
-            // Create new book record
+            // Đường dẫn URL tương đối
+            val documentRelativePath = "/uploads/$uniqueFilename"
+
+            // Lưu tài liệu
+            Files.copy(file.inputStream, documentPath, StandardCopyOption.REPLACE_EXISTING)
+            println("Đã lưu tài liệu vào: $documentPath")
+
+            // Xử lý ảnh bìa nếu được cung cấp
+            var coverImageRelativePath: String? = null
+            if (coverImage != null && !coverImage.isEmpty) {
+                val uniqueImageName = System.currentTimeMillis().toString() + "_" +
+                        StringUtils.cleanPath(coverImage.originalFilename ?: "cover.jpg")
+                val imagePath = imgPath.resolve(uniqueImageName)
+
+                // Đường dẫn URL tương đối
+                coverImageRelativePath = "/img/$uniqueImageName"
+
+                // Lưu tệp ảnh
+                Files.copy(coverImage.inputStream, imagePath, StandardCopyOption.REPLACE_EXISTING)
+                println("Đã lưu ảnh bìa vào: $imagePath")
+            }
+
+            // Tạo bản ghi sách mới - KHÔNG gán ID
             val book = Book().apply {
                 this.title = title
                 this.category = categoryService.getCategoryById(categoryId)
@@ -108,10 +129,10 @@ class UploadController(
                 this.publicationYear = publicationYear
                 this.isbn = isbn
                 this.description = description
-                this.coverImage = coverImagePath
-                this.filePath = filePath
+                this.coverImage = coverImageRelativePath
+                this.filePath = documentRelativePath
                 this.fileSize = file.size.toInt()
-                this.status = "waiting"
+                this.status = "unavailable"
                 this.pageCount = pageCount
                 this.createdAt = Instant.now()
                 this.updatedAt = Instant.now()
@@ -119,10 +140,11 @@ class UploadController(
                 this.viewCount = 0
             }
 
-
+            println("Book đã tạo, chuẩn bị lưu vào DB")
             val savedBook = bookService.saveBook(book)
+            println("Book đã lưu với ID: ${savedBook.id}")
 
-            // Connect book with author
+            // Kết nối sách với tác giả - dùng ID từ savedBook
             val bookAuthor = BookAuthor().apply {
                 id = BookAuthorId().apply {
                     this.bookId = savedBook.id
@@ -132,6 +154,7 @@ class UploadController(
                 this.author = authorService.getAuthorById(authorId)
             }
             bookAuthorService.saveBookAuthor(bookAuthor)
+            println("Đã lưu quan hệ BookAuthor")
 
             redirectAttributes.addFlashAttribute("success", "Tài liệu đã được tải lên thành công")
             return "redirect:/document-detail/" + savedBook.id

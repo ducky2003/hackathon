@@ -40,6 +40,7 @@ class HomeController(
                 bookService.getPaginatedBooks(page, size)
         }
 
+
         val parentCategories = categoryService.getAllParentCategories()
         val childCategoriesMap = categoryService.getCategoryHierarchy()
         model.addAttribute("books", paginatedBooks.content)

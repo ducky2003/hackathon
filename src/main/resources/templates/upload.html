@@ -323,13 +323,18 @@
                             <i class="fas fa-user-circle"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
-                            <li><a class="dropdown-item" href="upload.html"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
-                            <li><a class="dropdown-item" href="favorites.html"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
-                            <li><a class="dropdown-item" href="downloads.html"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" th:href="@{/favorites}"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" th:href="@{/my-downloads}"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
-                        </ul>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="dropdown-item p-0">
+                                    <button type="submit" class="btn btn-link dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                    </button>
+                                </form>
+                            </li>                        </ul>
                     </li>
                     <li class="nav-item">
                         <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
@@ -381,7 +386,8 @@
             </div>
 
             <!-- Upload Form -->
-            <form id="uploadForm">
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -440,6 +446,9 @@
                             <label class="form-label">Mô tả</label>
                             <textarea class="form-control" name="description" rows="3" required></textarea>
                         </div>
+                        <div class="mb-3">
+                            <input type="file" name="file" id="formFileInput" style="display: none;" required>
+                        </div>
                     </div>
                 </div>
 
@@ -493,7 +502,7 @@
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
-        
+
         // Check for saved theme preference
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
@@ -503,7 +512,7 @@
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
-            
+
             if (currentTheme === 'dark') {
                 document.documentElement.removeAttribute('data-theme');
                 icon.classList.replace('fa-sun', 'fa-moon');
@@ -566,6 +575,7 @@
             handleFile(file);
         });
 
+        // Replace your file handling function
         function handleFile(file) {
             if (file) {
                 // Update file info
@@ -581,27 +591,42 @@
                 // Show preview section
                 previewSection.classList.add('active');
 
+                // Copy the selected file to the form's file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                document.getElementById('formFileInput').files = dataTransfer.files;
+
                 // Handle preview based on file type
                 if (file.type === 'application/pdf') {
                     // Show PDF preview
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         previewContent.innerHTML = `
-                            <iframe src="${e.target.result}" width="100%" height="500px"></iframe>
-                        `;
+                    <iframe src="${e.target.result}" width="100%" height="500px"></iframe>
+                `;
                     };
                     reader.readAsDataURL(file);
                 } else {
                     // Show placeholder for other file types
                     previewContent.innerHTML = `
-                        <div class="preview-placeholder">
-                            <i class="fas fa-file-alt"></i>
-                            <p>Xem trước không khả dụng cho loại tệp này</p>
-                        </div>
-                    `;
+                <div class="preview-placeholder">
+                    <i class="fas fa-file-alt"></i>
+                    <p>Xem trước không khả dụng cho loại tệp này</p>
+                </div>
+            `;
                 }
             }
         }
+
+        // Replace your form submission handler
+        uploadForm.addEventListener('submit', function(e) {
+            // Don't prevent default - let the form submit normally to your Spring endpoint
+            // You can still show progress if you want
+            uploadProgress.classList.add('active');
+
+            // The form will now submit to your @PostMapping("/upload") endpoint
+            // No need to simulate the progress as it will redirect
+        });
 
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
@@ -612,36 +637,24 @@
         }
 
         // Handle form submission
-        uploadForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Show progress
-            uploadProgress.classList.add('active');
-            uploadForm.style.display = 'none';
 
-            // Simulate upload progress
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                progressBar.style.width = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    uploadStatus.textContent = 'Tải lên hoàn tất!';
-                    
-                    // Show success message after a delay
-                    setTimeout(() => {
-                        uploadProgress.classList.remove('active');
-                        uploadSuccess.classList.add('active');
-                    }, 1000);
-                }
-            }, 200);
-        });
 
         // Toggle preview
         document.getElementById('togglePreview').addEventListener('click', () => {
             previewContent.style.display = 
                 previewContent.style.display === 'none' ? 'block' : 'none';
+        });
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            console.log('Đang gửi form...');
+            const fileInput = document.getElementById('formFileInput');
+            if (fileInput.files.length > 0) {
+                console.log('File được chọn:', fileInput.files[0].name);
+            } else {
+                console.log('Không có file nào được chọn!');
+                e.preventDefault();
+                alert('Vui lòng chọn tệp trước khi gửi');
+                return false;
+            }
         });
     </script>
 </body>

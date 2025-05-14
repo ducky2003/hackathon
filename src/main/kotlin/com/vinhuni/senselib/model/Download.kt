@@ -11,6 +11,7 @@ import java.time.Instant
 @Table(name = "downloads")
 open class Download {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "download_id", nullable = false)
     open var id: Int? = null
 
@@ -30,4 +31,6 @@ open class Download {
 
     @Column(name = "ip_address", length = 45)
     open var ipAddress: String? = null
+    @Column(name = "is_deleted", nullable = false)
+    var isDeleted: Boolean = false
 }

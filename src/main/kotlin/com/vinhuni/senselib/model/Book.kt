@@ -11,8 +11,9 @@ import java.time.Instant
 @Table(name = "books")
 open class Book {
     @Id
-    @Column(name = "book_id", nullable = false)
-    open var id: Int? = null
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_id")
+    var id: Int = 0
 
     @Column(name = "title", nullable = false)
     open var title: String? = null

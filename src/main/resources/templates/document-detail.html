@@ -31,7 +31,29 @@
             color: var(--text-color);
             transition: all 0.3s ease;
         }
-
+        .related-doc-container {
+            margin-top: 15px;
+        }
+        .related-doc-card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .related-doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .related-doc-card img {
+            height: 180px;
+            object-fit: cover;
+        }
+        .card-title {
+            font-size: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
         [data-theme="dark"] body {
             background-color: #1a1a1a;
         }
@@ -229,7 +251,7 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <a class="navbar-brand" href="/">SenseLib</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -240,12 +262,18 @@
                             <i class="fas fa-user-circle fa-lg"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" th:href="@{/favorites}"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" th:href="@{/my-downloads}"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -291,8 +319,9 @@
 
                             <div class="document-actions">
                                 <button class="btn btn-primary">
-                                    <i class="fas fa-download"></i>
-                                    Tải xuống
+                                    <a th:href="@{'/download/' + ${book.id}}" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Tải về
+                                    </a>
                                 </button>
                                 <button class="btn btn-outline-primary">
                                     <i class="fas fa-file-pdf"></i>
@@ -370,28 +399,28 @@
             <div class="col-lg-4">
                 <div class="related-documents">
                     <h4 class="mb-4">Tài liệu liên quan</h4>
-                    
-                    <div class="related-doc">
-                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
-                        <div class="related-doc-info">
-                            <div class="related-doc-title">Tài liệu liên quan 1</div>
-                            <div class="related-doc-author">Tác giả: Nguyễn Văn D</div>
-                        </div>
-                    </div>
+                    <div class="related-doc-container">
+                        <!-- Debug info -->
+                        <p th:text="${'Số lượng tài liệu liên quan: ' + (relatedBooks != null ? relatedBooks.size() : 0)}"></p>
 
-                    <div class="related-doc">
-                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
-                        <div class="related-doc-info">
-                            <div class="related-doc-title">Tài liệu liên quan 2</div>
-                            <div class="related-doc-author">Tác giả: Trần Văn E</div>
-                        </div>
-                    </div>
-
-                    <div class="related-doc">
-                        <img src="https://via.placeholder.com/80x120" alt="Related Document">
-                        <div class="related-doc-info">
-                            <div class="related-doc-title">Tài liệu liên quan 3</div>
-                            <div class="related-doc-author">Tác giả: Lê Thị F</div>
+                        <!-- Danh sách tài liệu liên quan -->
+                        <div class="row">
+                            <div th:each="related : ${relatedBooks}" class="col-md-3 mb-4">
+                                <div class="card related-doc-card">
+                                    <a th:href="@{'/book/' + ${related.id}}">
+                                        <img class="card-img-top" th:src="${related.coverImage != null ? related.coverImage : '/img/auth-bg.jpg'}"
+                                             alt="Ảnh bìa">
+                                    </a>
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a th:href="@{'/book/' + ${related.id}}" th:text="${related.title}">Tên tài liệu</a>
+                                        </h5>
+                                        <p class="card-text" th:text="${'Tác giả: ' + (#lists.isEmpty(related.authors) ? 'Không có' : #strings.listJoin(related.authors, ', '))}">
+                                            Tác giả
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
