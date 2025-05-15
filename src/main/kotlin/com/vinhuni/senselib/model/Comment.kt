@@ -12,6 +12,7 @@ import java.time.Instant
 open class Comment {
     @Id
     @Column(name = "comment_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Thêm tự động tạo ID
     open var id: Int? = null
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

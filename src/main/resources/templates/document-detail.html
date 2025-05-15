@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>SenseLib - Chi tiết tài liệu</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -31,6 +33,17 @@
             color: var(--text-color);
             transition: all 0.3s ease;
         }
+
+        .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        #pdfViewerContainer {
+            overflow: auto;
+        }
         .related-doc-container {
             margin-top: 15px;
         }
@@ -57,7 +70,14 @@
         [data-theme="dark"] body {
             background-color: #1a1a1a;
         }
-
+        .watermark {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            color: rgba(0, 0, 0, 0.3);
+            transform: rotate(-45deg);
+            z-index: 1000;
+        }
         .navbar {
             background-color: var(--card-bg);
             box-shadow: 0 2px 5px var(--shadow);
@@ -318,78 +338,197 @@
                             </div>
 
                             <div class="document-actions">
-                                <button class="btn btn-primary">
+                                <button class="btn btn-primary ">
                                     <a th:href="@{'/download/' + ${book.id}}" class="btn btn-primary">
                                         <i class="fas fa-download"></i> Tải về
                                     </a>
                                 </button>
-                                <button class="btn btn-outline-primary">
+                                <button id="previewButton" class="btn btn-outline-primary">
                                     <i class="fas fa-file-pdf"></i>
                                     Xem PDF
                                 </button>
-                                <button class="btn btn-outline-danger">
-                                    <i class="fas fa-heart"></i>
-                                    Yêu thích
+                                <button type="button" id="favoriteButton" th:attr="data-book-id=${book.id}" class="btn btn-danger">
+                                    <i class="far fa-heart"></i> Yêu thích
                                 </button>
                             </div>
-
+                            <!-- Add this toast notification right before the closing body tag -->
+                            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                                <div id="likeToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header">
+                                        <i class="fas fa-heart me-2 text-danger"></i>
+                                        <strong class="me-auto">SenseLib</strong>
+                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body">
+                                        <span id="toastMessage">Đã thêm vào danh sách yêu thích.</span>
+                                        <div class="mt-2">
+                                            <a href="/favorites" class="link-primary">Xem danh sách tại đây</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="rating-section">
                                 <h4>Đánh giá của bạn</h4>
-                                <div class="rating-stars mb-3">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
+                                <form id="reviewForm" sec:authorize="isAuthenticated()" class="needs-validation" novalidate>
+                                    <input type="hidden" name="bookId" th:value="${book.id}">
+                                    <input type="hidden" id="ratingInput" name="rating" value="0">
+
+                                    <div class="rating-stars mb-3">
+                                        <i class="far fa-star" data-value="1"></i>
+                                        <i class="far fa-star" data-value="2"></i>
+                                        <i class="far fa-star" data-value="3"></i>
+                                        <i class="far fa-star" data-value="4"></i>
+                                        <i class="far fa-star" data-value="5"></i>
+                                        <span class="ms-2 text-muted">(Nhấp vào sao để đánh giá)</span>
+                                    </div>
+
+                                    <div class="mb-3">
+            <textarea id="reviewText" name="reviewText" class="form-control" rows="3"
+                      placeholder="Chia sẻ nhận xét của bạn về tài liệu này (không bắt buộc)..."></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                                    </button>
+                                </form>
+
+                                <div class="alert alert-info" sec:authorize="!isAuthenticated()">
+                                    <i class="fas fa-info-circle"></i> Bạn cần <a th:href="@{/login}">đăng nhập</a> để có thể đánh giá.
                                 </div>
-                                <div class="mb-3">
-                                    <textarea class="form-control" rows="3" placeholder="Viết đánh giá của bạn..."></textarea>
-                                </div>
-                                <button class="btn btn-primary">Gửi đánh giá</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="comments-section">
-                        <h4>Bình luận (3)</h4>
-                        <div class="comment">
-                            <div class="comment-header">
-                                <div class="comment-user">
-                                    <img src="https://via.placeholder.com/40" alt="User Avatar">
-                                    <div>
-                                        <h6 class="mb-0">Nguyễn Văn B</h6>
-                                        <small class="text-muted">2 giờ trước</small>
-                                    </div>
-                                </div>
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
+                    <!-- Add this in the document-info section after rating-section -->
+                    <div class="comments-section mt-4">
+                        <h4>Bình luận (<span id="commentCount" th:text="${commentCount}">0</span>)</h4>
+
+                        <!-- Comment form for logged-in users only -->
+                        <div class="comment-form mb-4" sec:authorize="isAuthenticated()">
+                            <div class="d-flex align-items-start gap-2">
+                                <img class="rounded-circle" width="40" height="40"
+                                     th:src="${currentUser != null && currentUser.avatar != null ? currentUser.avatar : '/img/default-avatar.jpg'}"
+                                     alt="Your avatar">
+                                <div class="flex-grow-1">
+                                    <form id="commentForm" class="needs-validation" novalidate>
+                                        <input type="hidden" name="bookId" th:value="${book.id}">
+                                        <input type="hidden" name="parentId" id="parentCommentId" value="">
+                                        <div class="mb-3">
+                        <textarea class="form-control" id="commentText" name="text" rows="3"
+                                  placeholder="Viết bình luận của bạn..." required></textarea>
+                                            <div class="invalid-feedback">
+                                                Vui lòng nhập nội dung bình luận.
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div id="replyingTo" class="text-primary d-none">
+                                                <i class="fas fa-reply"></i> Đang trả lời: <span id="replyUserName"></span>
+                                                <button type="button" id="cancelReply" class="btn btn-sm text-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-paper-plane"></i> Gửi bình luận
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-                            <p class="mb-0">Tài liệu rất hữu ích và dễ hiểu. Cảm ơn tác giả đã chia sẻ!</p>
                         </div>
 
-                        <div class="comment">
-                            <div class="comment-header">
-                                <div class="comment-user">
-                                    <img src="https://via.placeholder.com/40" alt="User Avatar">
-                                    <div>
-                                        <h6 class="mb-0">Trần Thị C</h6>
-                                        <small class="text-muted">5 giờ trước</small>
+                        <!-- Login prompt for non-authenticated users -->
+                        <div class="alert alert-info" sec:authorize="!isAuthenticated()">
+                            <i class="fas fa-info-circle"></i> Bạn cần <a th:href="@{/login}">đăng nhập</a> để có thể bình luận.
+                        </div>
+
+                        <!-- Comments list -->
+                        <div id="commentsList">
+                            <div th:if="${comments != null && !comments.isEmpty()}" class="comments-container">
+                                <div th:each="comment : ${comments.content}" th:id="'comment-' + ${comment.id}" class="comment mb-4">
+                                    <div class="comment-header d-flex justify-content-between">
+                                        <div class="comment-user d-flex align-items-center">
+                                            <img class="rounded-circle me-2" width="40" height="40"
+                                                 th:src="${comment.user != null && comment.user.avatar != null ? comment.user.avatar : '/img/default-avatar.jpg'}"
+                                                 alt="User avatar">
+                                            <div>
+                                                <h6 class="mb-0" th:text="${comment.user?.fullName ?: comment.user?.username}">User Name</h6>
+                                                <small class="text-muted" th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown" th:if="${#authentication.principal != null && #authentication.name == comment.user?.username}">
+                                            <button class="btn btn-sm text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <button class="dropdown-item edit-comment-btn" th:attr="data-comment-id=${comment.id}">
+                                                        <i class="fas fa-edit"></i> Chỉnh sửa
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item delete-comment-btn" th:attr="data-comment-id=${comment.id}">
+                                                        <i class="fas fa-trash-alt"></i> Xóa
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="comment-body mt-2">
+                                        <p class="comment-text mb-2" th:text="${comment.commentText}">Comment text here</p>
+                                        <div class="comment-actions">
+                                            <button class="btn btn-sm text-primary reply-btn" sec:authorize="isAuthenticated()"
+                                                    th:attr="data-comment-id=${comment.id},data-user-name=${comment.user?.fullName ?: comment.user?.username}">
+                                                <i class="fas fa-reply"></i> Trả lời
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Replies -->
+                                    <div class="replies ms-4 mt-3">
+                                        <div th:if="${commentReplies != null && commentReplies.containsKey(comment.id)}"
+                                             th:each="reply : ${commentReplies.get(comment.id)}"
+                                             th:id="'comment-' + ${reply.id}"
+                                             class="comment reply mb-3">
+                                            <div class="comment-header d-flex justify-content-between">
+                                                <div class="comment-user d-flex align-items-center">
+                                                    <img class="rounded-circle me-2" width="32" height="32"
+                                                         th:src="${reply.user != null && reply.user.avatar != null ? reply.user.avatar : '/img/default-avatar.jpg'}"
+                                                         alt="User avatar">
+                                                    <div>
+                                                        <h6 class="mb-0 small" th:text="${reply.user?.fullName ?: reply.user?.username}">User Name</h6>
+                                                        <small class="text-muted" th:text="${#temporals.format(reply.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</small>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown" th:if="${#authentication.principal != null && #authentication.name == reply.user?.username}">
+                                                    <button class="btn btn-sm text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <button class="dropdown-item edit-comment-btn" th:attr="data-comment-id=${reply.id}">
+                                                                <i class="fas fa-edit"></i> Chỉnh sửa
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button class="dropdown-item delete-comment-btn" th:attr="data-comment-id=${reply.id}">
+                                                                <i class="fas fa-trash-alt"></i> Xóa
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="comment-body mt-2">
+                                                <p class="comment-text mb-0 small" th:text="${reply.commentText}">Reply text here</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="rating-stars">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="far fa-star"></i>
-                                </div>
                             </div>
-                            <p class="mb-0">Nội dung hay nhưng có một số chỗ cần làm rõ thêm.</p>
+
+                            <!-- No comments message -->
+                            <div id="noComments" class="alert alert-light text-center" th:if="${comments == null || comments.isEmpty()}">
+                                <i class="far fa-comment-dots"></i> Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -427,10 +566,233 @@
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
+    <!-- Modal xem trước PDF -->
+    <div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pdfPreviewModalLabel">Xem trước tài liệu: <span th:text="${book.title}"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="pdfPreviewContainer" style="height: 500px; position: relative;">
+                        <div id="pdfViewerContainer" style="height: 100%;">
+                            <canvas id="pdfViewer"></canvas>
+                        </div>
+                        <div class="preview-overlay">
+                            <div class="text-center p-3 bg-dark bg-opacity-75 text-white">
+                                <p>Đây là bản xem trước. Chỉ hiển thị 5 trang đầu của tài liệu.</p>
+                                <p>Để xem đầy đủ, vui lòng tải xuống tài liệu.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex justify-content-between">
+                        <div>
+                            <button id="prevPage" class="btn btn-secondary">Trang trước</button>
+                            <button id="nextPage" class="btn btn-secondary">Trang sau</button>
+                            <span>Trang: <span id="currentPage">1</span>/<span id="totalPages">?</span></span>
+                        </div>
+                        <div>
+                            <button id="zoomIn" class="btn btn-secondary">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoomOut" class="btn btn-secondary">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <a th:href="@{/download/{id}(id=${book.id})}" class="btn btn-primary">Tải xuống tài liệu đầy đủ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        // Set worker source path
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+    <!-- JavaScript cho xem trước PDF -->
+    <script th:src="@{/js/pdfjs/build/pdf.mjs}"></script>
+    <script th:src="@{/js/pdfjs/build/pdf.worker.mjs}"></script>
+    <!-- Your preview script -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Document loaded, initializing PDF viewer");
+
+            // Initialize variables
+            const MAX_PREVIEW_PAGES = 5;
+            let pdfDoc = null;
+            let pageNum = 1;
+            let pageRendering = false;
+            let pageNumPending = null;
+            let scale = 1.5;
+            const canvas = document.getElementById('pdfViewer');
+            let ctx = null;
+
+            if (canvas) {
+                ctx = canvas.getContext('2d');
+                console.log("Canvas found and context created");
+            } else {
+                console.error("Canvas element not found");
+            }
+
+            // Preview button click handler
+            const previewButton = document.getElementById('previewButton');
+            if (previewButton) {
+                previewButton.addEventListener('click', function() {
+                    console.log("Preview button clicked");
+                    $('#pdfPreviewModal').modal('show');
+                });
+            }
+
+            // Modal shown event - load PDF
+            $('#pdfPreviewModal').on('shown.bs.modal', function() {
+                console.log("Modal shown, loading PDF");
+                loadPdf();
+            });
+
+            // Load PDF function
+            function loadPdf() {
+                if (!ctx) {
+                    console.error("Canvas context not available");
+                    return;
+                }
+
+                const bookId = /*[[${book.id}]]*/ 0;
+                const url = `/preview/${bookId}`;
+                console.log("Loading PDF from URL:", url);
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(arrayBuffer => {
+                        console.log("PDF data received, loading document");
+                        return pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                    })
+                    .then(pdf => {
+                        console.log("PDF loaded successfully with", pdf.numPages, "pages");
+                        pdfDoc = pdf;
+
+                        // Update total pages display
+                        const totalPages = Math.min(pdf.numPages, MAX_PREVIEW_PAGES);
+                        document.getElementById('totalPages').textContent = totalPages;
+
+                        // Render first page
+                        renderPage(pageNum);
+                    })
+                    .catch(error => {
+                        console.error("Error loading PDF:", error);
+                        alert("Không thể tải tài liệu. Vui lòng thử lại sau.");
+                    });
+            }
+
+            // Render page function
+            function renderPage(num) {
+                if (!pdfDoc) {
+                    console.error("No PDF document loaded");
+                    return;
+                }
+
+                pageRendering = true;
+                console.log("Rendering page", num);
+
+                // Get page
+                pdfDoc.getPage(num).then(function(page) {
+                    const viewport = page.getViewport({scale: scale});
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Render PDF page
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+
+                    page.render(renderContext).promise
+                        .then(function() {
+                            console.log("Page rendered successfully");
+                            pageRendering = false;
+
+                            if (pageNumPending !== null) {
+                                renderPage(pageNumPending);
+                                pageNumPending = null;
+                            }
+                        })
+                        .catch(function(error) {
+                            console.error("Error rendering page:", error);
+                            pageRendering = false;
+                        });
+
+                    // Update current page display
+                    document.getElementById('currentPage').textContent = num;
+                }).catch(function(error) {
+                    console.error("Error getting page:", error);
+                    pageRendering = false;
+                });
+            }
+
+            // Queue rendering
+            function queueRenderPage(num) {
+                if (pageRendering) {
+                    pageNumPending = num;
+                } else {
+                    renderPage(num);
+                }
+            }
+
+            // Page navigation
+            const prevPageBtn = document.getElementById('prevPage');
+            if (prevPageBtn) {
+                prevPageBtn.addEventListener('click', function() {
+                    if (pageNum <= 1) return;
+                    pageNum--;
+                    queueRenderPage(pageNum);
+                });
+            }
+
+            const nextPageBtn = document.getElementById('nextPage');
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', function() {
+                    if (!pdfDoc) return;
+                    const totalPageCount = Math.min(pdfDoc.numPages, MAX_PREVIEW_PAGES);
+                    if (pageNum >= totalPageCount) return;
+                    pageNum++;
+                    queueRenderPage(pageNum);
+                });
+            }
+
+            // Zoom controls
+            const zoomInBtn = document.getElementById('zoomIn');
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', function() {
+                    scale += 0.25;
+                    renderPage(pageNum);
+                });
+            }
+
+            const zoomOutBtn = document.getElementById('zoomOut');
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', function() {
+                    if (scale <= 0.5) return;
+                    scale -= 0.25;
+                    renderPage(pageNum);
+                });
+            }
+        });
+        // Add to your existing document-detail.html script
+
+    </script>
+    <!-- Bootstrap JS -->
+
     <script>
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
@@ -472,6 +834,572 @@
                 });
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteButton = document.getElementById('favoriteButton');
+            const likeToast = new bootstrap.Toast(document.getElementById('likeToast'));
+            const toastMessage = document.getElementById('toastMessage');
+
+            if (favoriteButton) {
+                const bookId = favoriteButton.getAttribute('data-book-id');
+                const favoriteIcon = favoriteButton.querySelector('i');
+
+                // Check initial like status
+                fetch(`/api/likes/status?bookId=${bookId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateButtonAppearance(data.isLiked);
+                    })
+                    .catch(error => console.error('Error checking like status:', error));
+
+                // Toggle like status on click
+                favoriteButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    fetch('/api/likes/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+                        },
+                        body: `bookId=${bookId}`
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'added') {
+                                updateButtonAppearance(true);
+                                toastMessage.textContent = 'Đã thêm vào danh sách yêu thích.';
+                                likeToast.show();
+                            } else if (data.status === 'removed') {
+                                updateButtonAppearance(false);
+                                toastMessage.textContent = 'Đã xóa khỏi danh sách yêu thích.';
+                                likeToast.show();
+                            }
+                        })
+                        .catch(error => console.error('Error toggling like:', error));
+                });
+
+                // Helper function to update button appearance
+                function updateButtonAppearance(isLiked) {
+                    if (isLiked) {
+                        favoriteIcon.classList.remove('far');
+                        favoriteIcon.classList.add('fas');
+                        favoriteButton.classList.remove('btn-outline-danger');
+                        favoriteButton.classList.add('btn-danger');
+                        favoriteButton.innerHTML = '<i class="fas fa-heart"></i> Đã yêu thích';
+                    } else {
+                        favoriteIcon.classList.remove('fas');
+                        favoriteIcon.classList.add('far');
+                        favoriteButton.classList.remove('btn-danger');
+                        favoriteButton.classList.add('btn-outline-danger');
+                        favoriteButton.innerHTML = '<i class="far fa-heart"></i> Yêu thích';
+                    }
+                }
+            }
+        });
+
     </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Khởi tạo xử lý bình luận...');
+
+        // Thiết lập các xử lý sự kiện ban đầu
+        setupCommentHandlers();
+
+        // Lắng nghe sự kiện click trên toàn bộ container chứa bình luận (delegated event handling)
+        const commentsList = document.getElementById('commentsList');
+        if (commentsList) {
+            commentsList.addEventListener('click', function(event) {
+                // Xử lý nút sửa
+                if (event.target.closest('.edit-comment-btn')) {
+                    const btn = event.target.closest('.edit-comment-btn');
+                    handleEditComment(btn);
+                }
+
+                // Xử lý nút xóa
+                if (event.target.closest('.delete-comment-btn')) {
+                    const btn = event.target.closest('.delete-comment-btn');
+                    handleDeleteComment(btn);
+                }
+
+                // Xử lý nút trả lời
+                if (event.target.closest('.reply-btn')) {
+                    const btn = event.target.closest('.reply-btn');
+                    handleReplyComment(btn);
+                }
+            });
+        }
+
+        // Thiết lập form bình luận
+        setupCommentForm();
+    });
+
+    function setupCommentHandlers() {
+        console.log('Thiết lập các handler cho bình luận');
+    }
+
+    function setupCommentForm() {
+        console.log('Thiết lập xử lý form bình luận');
+        const commentForm = document.getElementById('commentForm');
+        if (!commentForm) {
+            console.error('Không tìm thấy form bình luận');
+            return;
+        }
+
+        const commentText = document.getElementById('commentText');
+        const commentCount = document.getElementById('commentCount');
+        const parentCommentId = document.getElementById('parentCommentId');
+        const replyingTo = document.getElementById('replyingTo');
+        const replyUserName = document.getElementById('replyUserName');
+        const cancelReply = document.getElementById('cancelReply');
+
+        // Token CSRF
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // Xử lý khi submit form
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form đã được submit');
+
+            // Validation
+            if (!commentForm.checkValidity()) {
+                e.stopPropagation();
+                commentForm.classList.add('was-validated');
+                return;
+            }
+
+            const formData = new FormData(commentForm);
+            const bookId = formData.get('bookId');
+            const text = formData.get('text');
+            const parentId = formData.get('parentId');
+
+            console.log('Dữ liệu bình luận:', { bookId, text, parentId });
+
+            // Hiển thị trạng thái đang xử lý
+            const submitButton = commentForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+
+            fetch('/api/comments/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    [header]: token
+                },
+                body: new URLSearchParams({
+                    bookId: bookId,
+                    text: text,
+                    ...(parentId && parentId.trim() !== '' ? { parentId: parentId } : {})
+                })
+            })
+                .then(response => {
+                    console.log('Trạng thái phản hồi:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dữ liệu phản hồi:', data);
+
+                    // Khôi phục trạng thái nút
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+
+                    if (data.status === 'success') {
+                        // Xóa form
+                        commentText.value = '';
+                        commentForm.classList.remove('was-validated');
+
+                        // Đặt lại trạng thái trả lời
+                        if (parentId && parentId.trim() !== '') {
+                            resetReplyState();
+                        }
+
+                        // Cập nhật số lượng bình luận
+                        if (commentCount) {
+                            const currentCount = parseInt(commentCount.textContent, 10);
+                            commentCount.textContent = currentCount + 1;
+                        }
+
+                        // Hiển thị thông báo thành công và tải lại trang
+                        alert('Bình luận đã được gửi thành công!');
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra khi gửi bình luận: ' + (data.message || 'Lỗi không xác định'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi thêm bình luận:', error);
+
+                    // Khôi phục trạng thái nút
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+
+                    alert('Có lỗi xảy ra khi gửi bình luận. Vui lòng thử lại sau.');
+                });
+        });
+
+        // Hàm đặt lại trạng thái trả lời
+        function resetReplyState() {
+            if (parentCommentId) parentCommentId.value = '';
+            if (replyingTo) replyingTo.classList.add('d-none');
+            if (replyUserName) replyUserName.textContent = '';
+        }
+
+        // Xử lý nút hủy trả lời
+        if (cancelReply) {
+            cancelReply.addEventListener('click', resetReplyState);
+        }
+    }
+
+    function handleEditComment(btn) {
+        const commentId = btn.getAttribute('data-comment-id');
+        console.log('Đang sửa bình luận ID:', commentId);
+
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        if (!commentElement) {
+            console.error('Không tìm thấy phần tử bình luận với ID:', commentId);
+            return;
+        }
+
+        const commentTextElement = commentElement.querySelector('.comment-text');
+        if (!commentTextElement) {
+            console.error('Không tìm thấy phần tử .comment-text trong bình luận');
+            return;
+        }
+
+        const originalText = commentTextElement.textContent.trim();
+        console.log('Nội dung gốc của bình luận:', originalText);
+
+        // Kiểm tra xem form chỉnh sửa đã tồn tại chưa
+        if (commentElement.querySelector('.edit-form')) {
+            console.log('Form chỉnh sửa đã tồn tại, bỏ qua');
+            return;
+        }
+
+        // Tạo form sửa
+        const editForm = document.createElement('div');
+        editForm.classList.add('edit-form', 'mt-2');
+        editForm.innerHTML = `
+        <textarea class="form-control mb-2">${originalText}</textarea>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-sm btn-secondary cancel-edit-btn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-sm btn-primary save-edit-btn">
+                <i class="fas fa-save"></i> Lưu
+            </button>
+        </div>
+    `;
+
+        // Ẩn text gốc
+        commentTextElement.style.display = 'none';
+
+        // Thêm form sau phần text
+        commentTextElement.after(editForm);
+
+        // Focus vào textarea
+        const textarea = editForm.querySelector('textarea');
+        textarea.focus();
+
+        // Token CSRF
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // Xử lý nút hủy
+        editForm.querySelector('.cancel-edit-btn').addEventListener('click', function() {
+            commentTextElement.style.display = '';
+            editForm.remove();
+        });
+
+        // Xử lý nút lưu
+        editForm.querySelector('.save-edit-btn').addEventListener('click', function() {
+            const updatedText = textarea.value.trim();
+
+            if (!updatedText) {
+                textarea.classList.add('is-invalid');
+                return;
+            }
+
+            const saveBtn = this;
+            const originalBtnText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+            console.log('Gửi yêu cầu cập nhật bình luận:', commentId, updatedText);
+
+            fetch(`/api/comments/update/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    [header]: token
+                },
+                body: new URLSearchParams({
+                    text: updatedText
+                })
+            })
+                .then(response => {
+                    console.log('Phản hồi cập nhật:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dữ liệu phản hồi cập nhật:', data);
+
+                    if (data.status === 'success') {
+                        commentTextElement.textContent = updatedText;
+                        commentTextElement.style.display = '';
+                        editForm.remove();
+
+                        // Hiển thị thông báo thành công
+                        alert('Đã cập nhật bình luận thành công!');
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể cập nhật bình luận'));
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalBtnText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi cập nhật bình luận:', error);
+                    alert('Có lỗi xảy ra khi cập nhật bình luận. Vui lòng thử lại sau.');
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnText;
+                });
+        });
+    }
+
+    function handleDeleteComment(btn) {
+        const commentId = btn.getAttribute('data-comment-id');
+        console.log('Đang xóa bình luận ID:', commentId);
+
+        if (confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
+            console.log('Xác nhận xóa bình luận:', commentId);
+
+            // Token CSRF
+            const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+            fetch(`/api/comments/delete/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    [header]: token
+                }
+            })
+                .then(response => {
+                    console.log('Phản hồi xóa:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Server trả về lỗi: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dữ liệu phản hồi xóa:', data);
+
+                    if (data.status === 'success') {
+                        // Tìm phần tử bình luận
+                        const commentElement = document.getElementById(`comment-${commentId}`);
+
+                        // Kiểm tra nếu đây là bình luận chính hoặc phản hồi
+                        const isMainComment = !commentElement.closest('.replies');
+
+                        // Xóa phần tử bình luận khỏi DOM
+                        commentElement.remove();
+
+                        // Cập nhật số lượng bình luận
+                        const commentCount = document.getElementById('commentCount');
+                        if (isMainComment && commentCount) {
+                            const currentCount = parseInt(commentCount.textContent, 10);
+                            commentCount.textContent = Math.max(0, currentCount - 1);
+
+                            // Hiển thị thông báo không có bình luận nếu cần
+                            if (parseInt(commentCount.textContent, 10) === 0) {
+                                const noComments = document.getElementById('noComments');
+                                if (noComments) {
+                                    noComments.style.display = 'block';
+                                }
+                            }
+                        }
+
+                        // Hiển thị thông báo thành công
+                        alert('Đã xóa bình luận thành công!');
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể xóa bình luận'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi xóa bình luận:', error);
+                    alert('Có lỗi xảy ra khi xóa bình luận. Vui lòng thử lại sau.');
+                });
+        }
+    }
+
+    function handleReplyComment(btn) {
+        const commentId = btn.getAttribute('data-comment-id');
+        const userName = btn.getAttribute('data-user-name');
+
+        console.log('Đang trả lời bình luận ID:', commentId, 'của người dùng:', userName);
+
+        const parentCommentId = document.getElementById('parentCommentId');
+        const replyingTo = document.getElementById('replyingTo');
+        const replyUserName = document.getElementById('replyUserName');
+        const commentText = document.getElementById('commentText');
+        const commentForm = document.getElementById('commentForm');
+
+        if (parentCommentId && replyingTo && replyUserName) {
+            parentCommentId.value = commentId;
+            replyUserName.textContent = userName;
+            replyingTo.classList.remove('d-none');
+
+            // Focus vào textarea
+            if (commentText) {
+                commentText.focus();
+            }
+
+            // Cuộn đến form bình luận
+            if (commentForm) {
+                commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }
+</script>
+<script>
+    // Add this to the existing document-detail.html page script section
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const ratingStars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('ratingInput');
+        const reviewForm = document.getElementById('reviewForm');
+        const reviewText = document.getElementById('reviewText');
+
+        // Set initial rating value
+        let currentRating = 0;
+
+        // Star rating functionality
+        ratingStars.forEach((star, index) => {
+            // Hover effect
+            star.addEventListener('mouseover', () => {
+                resetStars();
+                highlightStars(index);
+            });
+
+            // Click to set rating
+            star.addEventListener('click', () => {
+                currentRating = index + 1;
+                ratingInput.value = currentRating;
+                highlightStars(index);
+            });
+
+            // Mouse leave
+            star.parentElement.addEventListener('mouseleave', () => {
+                resetStars();
+                if (currentRating > 0) {
+                    highlightStars(currentRating - 1);
+                }
+            });
+        });
+
+        // Helper functions
+        function resetStars() {
+            ratingStars.forEach(s => {
+                s.classList.remove('fas');
+                s.classList.add('far');
+            });
+        }
+
+        function highlightStars(index) {
+            ratingStars.forEach((s, i) => {
+                if (i <= index) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                }
+            });
+        }
+
+        // Check if user has already rated this book
+        const bookId = document.querySelector('input[name="bookId"]').value;
+
+        fetch(`/api/reviews/user-rating?bookId=${bookId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasRating) {
+                    currentRating = data.rating;
+                    ratingInput.value = currentRating;
+                    highlightStars(currentRating - 1);
+
+                    if (data.reviewText) {
+                        reviewText.value = data.reviewText;
+                    }
+
+                    // Update submit button text
+                    const submitBtn = reviewForm.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-save"></i> Cập nhật đánh giá';
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching user rating:', error));
+
+        // Handle review form submission
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (currentRating === 0) {
+                    alert('Vui lòng chọn số sao đánh giá');
+                    return;
+                }
+
+                const formData = new FormData(reviewForm);
+                const reviewData = {
+                    bookId: formData.get('bookId'),
+                    rating: formData.get('rating'),
+                    reviewText: formData.get('reviewText')
+                };
+
+                const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                const submitBtn = reviewForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+
+                fetch('/api/reviews/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify(reviewData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+
+                        if (data.status === 'success') {
+                            alert('Cảm ơn bạn đã đánh giá!');
+                            submitBtn.innerHTML = '<i class="fas fa-save"></i> Cập nhật đánh giá';
+
+                            // Update average rating display if needed
+                            if (data.newAverage) {
+                                const avgRatingElement = document.querySelector('.stat-item span[data-rating]');
+                                if (avgRatingElement) {
+                                    avgRatingElement.textContent = data.newAverage + '/5';
+                                }
+                            }
+                        } else {
+                            alert('Có lỗi xảy ra: ' + (data.message || 'Không thể lưu đánh giá'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting review:', error);
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        alert('Có lỗi xảy ra khi gửi đánh giá');
+                    });
+            });
+        }
+    });
+</script>
 </body>
 </html>

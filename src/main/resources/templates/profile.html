@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -225,7 +225,7 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <a class="navbar-brand" href="/">SenseLib</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -290,7 +290,7 @@
                             <div class="row profile-info">
                                 <div class="col-md-4">
                                     <div class="profile-avatar-container">
-                                        <img src="https://via.placeholder.com/150" alt="Avatar" class="profile-avatar" id="profileAvatar">
+                                        <img th:src="${user.avatar != null ? user.avatar : '/img/auth-bg.jpg'}" alt="Avatar" class="profile-avatar" id="profileAvatar">
                                         <label class="avatar-upload" id="avatarUpload">
                                             <i class="fas fa-camera"></i>
                                             <input type="file" id="avatarInput" accept="image/*">
@@ -298,30 +298,30 @@
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Ngày sinh</label>
-                                        <input type="date" class="form-control" value="1990-01-01" disabled>
+                                        <input type="date" class="form-control" th:value="${user.dateOfBirth}" disabled>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Số điện thoại</label>
-                                        <input type="tel" class="form-control" value="0123456789" disabled>
+                                        <input type="tel" class="form-control" th:value="${user.phone}" disabled>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Email</label>
-                                        <input type="email" class="form-control" value="user@example.com" disabled>
+                                        <input type="email" class="form-control" th:value="${user.email}" disabled>
                                     </div>
                                 
                                 </div>
                                 <div class="col-md-8">
                                     <div class="form-group">
                                         <label class="form-label">Họ và tên</label>
-                                        <input type="text" class="form-control" value="Nguyễn Văn A" disabled>
+                                        <input type="text" class="form-control" th:value="${user.fullName}" disabled>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Địa chỉ</label>
-                                        <textarea class="form-control" rows="3" disabled>123 Đường ABC, Quận XYZ, TP. HCM</textarea>
+                                        <textarea class="form-control" rows="3" disabled th:text="${user.address}">123 Đường ABC, Quận XYZ, TP. HCM</textarea>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Tiểu sử</label>
-                                        <textarea class="form-control" rows="5" disabled>Là một người đam mê đọc sách và chia sẻ kiến thức...</textarea>
+                                        <textarea class="form-control" rows="5" disabled th:text="${user.description}">Là một người đam mê đọc sách và chia sẻ kiến thức...</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -536,6 +536,53 @@
             passwordConfirmModal.hide();
             passwordForm.reset();
             alert('Mật khẩu đã được thay đổi thành công!');
+        });
+    </script>
+    <script>
+        // Handle confirm save
+        confirmSaveBtn.addEventListener('click', () => {
+            // Create form data to send
+            const formData = new FormData();
+
+            // Add all form fields
+            profileInputs.forEach(input => {
+                formData.append(input.id || input.name, input.value);
+                originalValues[input.id || input.name] = input.value;
+            });
+
+            // Add avatar if changed
+            if (avatarInput.files.length > 0) {
+                formData.append('profileImage', avatarInput.files[0]);
+            }
+
+            // Send data to server
+            fetch('/profile/update', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Network response was not ok.');
+                })
+                .then(data => {
+                    // Handle success
+                    isEditing = false;
+                    profileInputs.forEach(input => {
+                        input.disabled = true;
+                    });
+                    editProfileBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    profileActions.style.display = 'none';
+                    avatarUpload.style.display = 'none';
+
+                    confirmModal.hide();
+                    alert('Thông tin đã được cập nhật thành công!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi cập nhật thông tin!');
+                });
         });
     </script>
 </body>

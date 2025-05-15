@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,8 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/assets/style.css">
-
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <style>
         :root {
             --primary-color: #40E0D0;
@@ -35,7 +36,10 @@
             color: var(--text-color);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        
+        .book-card {
+            /* Keep your existing styles */
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        }
         .navbar {
             background-color: var(--card-bg) !important;
             box-shadow: 0 2px 5px var(--shadow);
@@ -228,27 +232,37 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="home.html">SenseLib</a>
+            <a class="navbar-brand" href="/">SenseLib</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
+                <!-- Add these navigation items -->
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i>
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i> <span sec:authentication="name">Username</span>
                         </a>
+                        <!-- This dropdown menu was already defined but wasn't connected to a toggle -->
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="profile.html"><i class="fas fa-user"></i> Trang cá nhân</a></li>
-                            <li><a class="dropdown-item" href="upload.html"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
-                            <li><a class="dropdown-item" href="favorites.html"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
-                            <li><a class="dropdown-item" href="downloads.html"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
+                            <li><a class="dropdown-item" th:href="@{/profile}"><i class="fas fa-user"></i> Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" th:href="@{/upload}"><i class="fas fa-upload"></i> Đăng tài liệu</a></li>
+                            <li><a class="dropdown-item" th:href="@{/favorites}"><i class="fas fa-heart"></i> Tài liệu yêu thích</a></li>
+                            <li><a class="dropdown-item" th:href="@{/my-downloads}"><i class="fas fa-download"></i> Tài liệu đã tải</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
+                    <!-- Add theme toggle button -->
                     <li class="nav-item">
-                        <button class="theme-toggle" id="themeToggle" title="Chuyển đổi chế độ sáng/tối">
+                        <button id="themeToggle" class="theme-toggle">
                             <i class="fas fa-moon"></i>
                         </button>
                     </li>
@@ -259,72 +273,69 @@
 
     <!-- Main Content -->
     <main class="container mt-5 pt-5">
-        <!-- Page Header -->
         <section class="page-header">
             <h1 class="display-4 mb-3">Tài liệu yêu thích</h1>
             <p class="lead">Danh sách các tài liệu bạn đã đánh dấu yêu thích</p>
         </section>
 
-        <!-- Favorites Content -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <!-- Sample Favorite Document -->
-            <div class="col">
-                <div class="book-card">
-                    <div class="position-relative">
-                        <img src="/img/flower.jpg" alt="Book cover" class="book-image">
-                        <button class="favorite-btn" title="Bỏ yêu thích">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="book-info">
-                        <h3>Tiêu đề tài liệu</h3>
-                        <p class="mb-2">Tác giả: John Doe</p>
-                        <p class="mb-2">NXB: ABC Publishing</p>
-                        <div class="book-stats">
-                            <span><i class="fas fa-eye"></i> 1.2k</span>
-                            <span><i class="fas fa-star"></i> 4.5</span>
-                            <span><i class="fas fa-download"></i> 500</span>
-                        </div>
-                        <p class="mb-3">Đã thêm: 01/01/2024</p>
-                        <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
-                            <i class="fas fa-info-circle"></i> Xem chi tiết
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="book-card">
-                    <div class="position-relative">
-                        <img src="/img/flower.jpg" alt="Book cover" class="book-image">
-                        <button class="favorite-btn" title="Bỏ yêu thích">
-                            <i class="fas fa-heart"></i>
-                        </button>
-                    </div>
-                    <div class="book-info">
-                        <h3>Tiêu đề tài liệu</h3>
-                        <p class="mb-2">Tác giả: John Doe</p>
-                        <p class="mb-2">NXB: ABC Publishing</p>
-                        <div class="book-stats">
-                            <span><i class="fas fa-eye"></i> 1.2k</span>
-                            <span><i class="fas fa-star"></i> 4.5</span>
-                            <span><i class="fas fa-download"></i> 500</span>
-                        </div>
-                        <p class="mb-3">Đã thêm: 01/01/2024</p>
-                        <button type="button" class="detail-btn" onclick="window.location.href='document-detail.html'">
-                            <i class="fas fa-info-circle"></i> Xem chi tiết
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Empty State (Hidden by default) -->
-            <div class="col-12 d-none">
+            <div th:if="${favorites == null || favorites.isEmpty()}" class="col-12">
                 <div class="empty-state">
                     <i class="fas fa-heart-broken"></i>
                     <h3>Chưa có tài liệu yêu thích nào</h3>
                     <p>Khám phá thư viện và đánh dấu những tài liệu bạn yêu thích</p>
-                    <a href="home.html" class="btn-explore">
+                    <a href="/" class="btn-explore">
                         <i class="fas fa-search"></i> Khám phá ngay
                     </a>
+                </div>
+            </div>
+
+            <div th:each="favorite : ${favorites}" class="col">
+                <div class="book-card">
+                    <div class="position-relative">
+                        <img th:src="${favorite.book.coverImage != null ? favorite.book.coverImage : '/img/placeholder.jpg'}"
+                             alt="Book cover" class="book-image">
+                        <button class="favorite-btn" title="Bỏ yêu thích"
+                                th:attr="data-book-id=${favorite.book.id}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="book-info">
+                        <h3 th:text="${favorite.book.title}">Tiêu đề tài liệu</h3>
+                        <p class="mb-2">
+                            Người đăng: <span th:text="${favorite.book.createdBy?.fullName}">Unknown</span>
+                        </p>
+                        <p class="mb-2">
+                            Tác giả: <span th:text="${#strings.listJoin(@bookService.getAuthorsForBook(favorite.book.id), ', ')}">Unknown</span>
+                        </p>
+                        <p class="mb-2">
+                            Nhà xuất bản: <span th:text="${favorite.book.publisher?.publisherName}">Unknown</span>
+                        </p>
+                        <div class="book-stats">
+                            <span><i class="fas fa-eye"></i> <span th:text="${favorite.book.viewCount}">0</span></span>
+                            <span><i class="fas fa-download"></i> <span th:text="${@bookService.countDownloadsByBookId(favorite.book.id)}">0</span></span>
+                            <span><i class="fas fa-star"></i>
+                                <span th:text="${@bookService.getAverageRating(favorite.book.id)}">0.0</span>
+                            </span>
+                        </div>
+                        <p class="mb-3" th:text="'Đã thêm: ' + ${#temporals.format(favorite.createdAt, 'dd/MM/yyyy')}">Đã thêm: 01/01/2024</p>
+                        <a th:href="@{/document-detail/{id}(id=${favorite.book.id})}" class="detail-btn">
+                            <i class="fas fa-info-circle"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- Add this toast notification before the closing body tag -->
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                <div id="likeToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-heart-broken me-2 text-danger"></i>
+                        <strong class="me-auto">SenseLib</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        <span id="toastMessage">Đã xóa khỏi danh sách yêu thích.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -334,6 +345,56 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const likeToast = new bootstrap.Toast(document.getElementById('likeToast'));
+            const toastMessage = document.getElementById('toastMessage');
+
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-book-id');
+                    const card = this.closest('.book-card').parentElement;
+
+                    console.log('Remove favorite clicked for book:', bookId);
+
+                    fetch('/api/likes/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content')
+                        },
+                        body: `bookId=${bookId}`
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'removed') {
+                                // Animate removal
+                                card.style.opacity = '0';
+                                setTimeout(() => {
+                                    card.style.display = 'none';
+
+                                    // Check if there are any remaining cards
+                                    const remainingCards = document.querySelectorAll('.book-card:not([style*="display: none"])');
+                                    if (remainingCards.length === 0) {
+                                        const emptyState = document.querySelector('.empty-state');
+                                        if (emptyState) {
+                                            emptyState.classList.remove('d-none');
+                                        }
+                                    }
+                                }, 300);
+
+                                // Show toast notification
+                                toastMessage.textContent = 'Đã xóa khỏi danh sách yêu thích.';
+                                likeToast.show();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error removing favorite:', error);
+                            toastMessage.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
+                            likeToast.show();
+                        });
+                });
+            });
+        });
         // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
@@ -370,6 +431,46 @@
                 if (remainingCards.length === 0) {
                     document.querySelector('.empty-state').classList.remove('d-none');
                 }
+            });
+        });
+        // Add to favorites.html
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const bookId = this.getAttribute('data-book-id');
+                    const card = this.closest('.book-card').parentElement;
+
+                    console.log('Remove favorite clicked for book:', bookId);
+
+                    fetch('/api/likes/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `bookId=${bookId}`
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Toggle response:', data);
+                            if (data.status === 'removed') {
+                                // Hide the card with animation
+                                card.style.opacity = '0';
+                                setTimeout(() => {
+                                    card.style.display = 'none';
+
+                                    // Check if there are any remaining cards
+                                    const remainingCards = document.querySelectorAll('.book-card:not([style*="display: none"])');
+                                    if (remainingCards.length === 0) {
+                                        const emptyState = document.querySelector('.empty-state');
+                                        if (emptyState) {
+                                            emptyState.classList.remove('d-none');
+                                        }
+                                    }
+                                }, 300);
+                            }
+                        })
+                        .catch(error => console.error('Error removing favorite:', error));
+                });
             });
         });
     </script>

@@ -4,17 +4,35 @@ import com.vinhuni.senselib.dto.BookDTO
 import com.vinhuni.senselib.model.Book
 import com.vinhuni.senselib.repository.BookAuthorRepository
 import com.vinhuni.senselib.repository.BookRepository
+import com.vinhuni.senselib.repository.LikeRepository
+import com.vinhuni.senselib.repository.ReviewRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-@Service
+@Service("bookService")
 class BookService(
     private val bookRepository: BookRepository,
-    private val bookAuthorRepository: BookAuthorRepository
+    private val bookAuthorRepository: BookAuthorRepository,
+    private val likeRepository: LikeRepository,
+    private val reviewRepository: ReviewRepository
 ) {
+    fun getAverageRating(bookId: Int): Double {
+        val reviews = reviewRepository.findByBookId(bookId)
+        if (reviews.isEmpty()) return 0.0
+        val sum = reviews.sumOf { (it.rating ?: 0).toInt() }
+        return sum.toDouble() / reviews.size
+    }
+    fun countDownloadsByBookId(bookId: Int): Int {
+        return bookRepository.countDownloadsByBookId(bookId)
+    }
+    fun getAuthorsForBook(bookId: Int): List<String> {
+        val bookAuthors = bookAuthorRepository.findByBookId(bookId)
+        return bookAuthors.mapNotNull { it.author?.authorName }
+    }
     fun getPaginatedBooks(page: Int, size: Int): Page<BookDTO> {
         val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
         val books = bookRepository.findAllByOrderByCreatedAtDesc(pageable)
@@ -105,29 +123,35 @@ class BookService(
         println("Lưu book: $book")
         return bookRepository.save(book)
     }
-    fun getRandomRelatedBooks(categoryId: Int, bookId: Int, limit: Int = 4): List<BookDTO> {
-        println("Tìm tài liệu liên quan cho category=$categoryId, bookId=$bookId, limit=$limit")
-        val relatedBooks = bookRepository.findRandomBooksByCategoryIdAndNotBookId(categoryId, bookId, limit)
-        println("Tìm thấy ${relatedBooks.size} tài liệu liên quan")
+    fun getRandomRelatedBooks(categoryId: Int, bookId: Int, limit: Int = 5): List<BookDTO> {
+        try {
+            // Get the books
+            val books = bookRepository.findRandomBooksInSameCategory(categoryId, bookId, limit)
 
-        return relatedBooks.map { book ->
-            val authors = bookAuthorRepository.findByBookId(book.id!!)
-                .mapNotNull { it.author?.authorName }
+            // Map to DTOs
+            return books.map { book ->
+                val authors = bookAuthorRepository.findByBookId(book.id!!)
+                    .mapNotNull { it.author?.authorName }
 
-            val downloadCount = bookRepository.countDownloadsByBookId(book.id!!)
-            val rating = bookRepository.getAverageRatingByBookId(book.id!!) ?: 0.0
+                val downloadCount = bookRepository.countDownloadsByBookId(book.id!!)
+                val rating = bookRepository.getAverageRatingByBookId(book.id!!) ?: 0.0
 
-            BookDTO(
-                id = book.id,
-                title = book.title,
-                authors = authors,
-                publisherName = book.publisher?.publisherName,
-                coverImage = book.coverImage,
-                createdAt = book.createdAt,
-                viewCount = book.viewCount,
-                downloadCount = downloadCount,
-                rating = rating
-            )
+                BookDTO(
+                    id = book.id,
+                    title = book.title,
+                    authors = authors,
+                    publisherName = book.publisher?.publisherName,
+                    coverImage = book.coverImage,
+                    createdAt = book.createdAt,
+                    viewCount = book.viewCount,
+                    downloadCount = downloadCount,
+                    rating = rating
+                )
+            }
+        } catch (e: Exception) {
+            println("Error getting related books: ${e.message}")
+            e.printStackTrace()
+            return emptyList()
         }
     }
     private fun mapBooksToDTO(books: Page<Book>): Page<BookDTO> {
